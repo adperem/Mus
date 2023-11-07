@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jugadores [
+        <!ELEMENT jugadores (jugador*)>
+        <!ELEMENT jugador (nombre, cartera, passwd)>
+        <!ELEMENT nombre (#PCDATA)>
+        <!ELEMENT cartera (#PCDATA)>
+        <!ELEMENT passwd (#PCDATA)>
+        ]>
+<jugadores>
+    <jugador>
+        <nombre>Adri</nombre>
+        <cartera>1000</cartera>
+        <passwd>1234</passwd>
+    </jugador>
+</jugadores>

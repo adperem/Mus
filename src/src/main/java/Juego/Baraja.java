@@ -1,5 +1,7 @@
+package Juego;
+
 import java.util.ArrayList;
-import java.util.Random;
+import java.util.Collections;
 
 public class Baraja {
 
@@ -17,18 +19,17 @@ public class Baraja {
     }
 
     public Carta sacarCarta(){
-        Carta c = this.baraja.get(0);
-        this.baraja.remove(0);
-        return c;
+        if(this.baraja.size()>0){
+            Carta c = this.baraja.get(0);
+            this.baraja.remove(0);
+            return c;
+        }
+        return null;
+
     }
 
     public void barajear(){
-        ArrayList<Carta> baraja= new ArrayList<Carta>();
-        for (Carta c:this.baraja) {
-            baraja.add(this.baraja.get())
-        }
-
-
+        Collections.shuffle(this.baraja);
     }
 
 

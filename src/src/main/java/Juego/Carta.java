@@ -1,3 +1,5 @@
+package Juego;
+
 public class Carta {
 
     public enum Palo{
