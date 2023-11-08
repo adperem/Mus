@@ -21,7 +21,7 @@ public class Jugador {
         this.name = name;
         this.cartera = cartera;
     }
-    private String getName(){
+    public String getName(){
         return this.name;
     }
 
