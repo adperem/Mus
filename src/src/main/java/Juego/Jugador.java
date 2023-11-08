@@ -12,9 +12,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Scanner;
 
-public class Jugador {
+public class Jugador implements Serializable {
     private String name;
     private double cartera;
     public Jugador(String name, double cartera){

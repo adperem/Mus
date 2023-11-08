@@ -1,8 +1,9 @@
 package Juego;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Mesa {
+public class Mesa implements Serializable {
 
     private ArrayList<Jugador> jugadores = new ArrayList<>(4);
     private double codMesa;
