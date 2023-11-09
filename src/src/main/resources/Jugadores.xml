@@ -8,7 +8,22 @@
         ]>
 <jugadores>
     <jugador>
-        <nombre>Adri</nombre>
+        <nombre>u1</nombre>
+        <cartera>1000</cartera>
+        <passwd>1234</passwd>
+    </jugador>
+    <jugador>
+        <nombre>u2</nombre>
+        <cartera>1000</cartera>
+        <passwd>1234</passwd>
+    </jugador>
+    <jugador>
+        <nombre>u3</nombre>
+        <cartera>1000</cartera>
+        <passwd>1234</passwd>
+    </jugador>
+    <jugador>
+        <nombre>u4</nombre>
         <cartera>1000</cartera>
         <passwd>1234</passwd>
     </jugador>

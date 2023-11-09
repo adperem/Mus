@@ -1,9 +1,10 @@
 package Juego;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class Baraja {
+public class Baraja implements Serializable {
 
     private ArrayList<Carta> baraja= new ArrayList<Carta>();
 

@@ -8,6 +8,7 @@ public class Mesa implements Serializable {
     private ArrayList<Jugador> jugadores = new ArrayList<>(4);
     private double codMesa;
     private Baraja baraja;
+    private double apuestaMasAlta;
 
     public Mesa(double codMesa){
         //Creamos una mesa desde 0
@@ -19,8 +20,11 @@ public class Mesa implements Serializable {
     public boolean couldJoin(Jugador jugador){
         if (this.jugadores.isEmpty()) return true;
         if(this.jugadores.size()==4) return false;
-        for (Jugador j:this.jugadores) {
-            if (j.getName().equals(jugador.getName())) return false;
+        for (int i=0;i<this.jugadores.size(); i++) {
+            if(this.jugadores.get(i)!=null){
+                if (this.jugadores.get(i).getName().equals(jugador.getName())) return false;
+            }
+
         }
         return true;
     }
@@ -43,5 +47,17 @@ public class Mesa implements Serializable {
 
     public double getCodMesa() {
         return codMesa;
+    }
+
+    public double getApuestaMasAlta() {
+        return apuestaMasAlta;
+    }
+
+    public void setApuestaMasAlta(double apuestaMasAlta) {
+        this.apuestaMasAlta = apuestaMasAlta;
+    }
+
+    public int getNumPlayers(){
+        return this.jugadores.size();
     }
 }
