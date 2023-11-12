@@ -1,19 +1,18 @@
 package Red;
 
-import Juego.Game;
+import Juego.Carta;
 import Juego.Jugador;
-import Juego.Mesa;
-import jdk.nashorn.internal.runtime.regexp.joni.ScanEnvironment;
+
 
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Client {
 
-
-    private Jugador jugador;
+    private Jugador jugador=new Jugador();
     public static void main(String[] args){
         Client client = new Client();
         client.jugar();
@@ -94,17 +93,39 @@ public class Client {
             out.writeDouble(codMesa);
             out.writeObject(jugador); //Enviamos el jugador
 
-            ObjectInputStream in = new ObjectInputStream(s.getInputStream());
+              ObjectInputStream in = new ObjectInputStream(s.getInputStream());
             String accion = (String) in.readObject();
             if(accion.equals("CORRECT")){
+                ArrayList<Carta> mano = new ArrayList<>(4);
                 System.out.println("Te has unido a la mesa");
                 // Nos hemos unido a la mesa
                 accion = (String) in.readObject();
                 if (accion.equals("START")){
                     // Empezamos a jugar
                     System.out.println("Empezamos juego");
-                    Mesa mesa = (Mesa) in.readObject();
-                    accion = (String) in.readObject();
+
+                    for (int i=0; i<4;i++){
+                        mano.add((Carta) in.readObject());
+                    }
+
+                    mostrarCartas(mano);
+                    System.out.println("Seleccione:\n1 - Mus\n2 -Cortar");
+                    switch (Integer.parseInt(sc.nextLine())){
+                        case 1:
+                            out.writeObject("true");
+                            break;
+                        case 2:
+                            out.writeObject("false");
+                            break;
+                    }
+                    System.out.println((String) in.readObject());
+
+
+
+
+
+
+
                 }
 
 
@@ -135,6 +156,16 @@ public class Client {
         //Envia al servidor la orden de crear un mesa nueva
     }
 
+
+    public static void mostrarCartas(ArrayList<Carta> cartas){
+        System.out.println("-------------------");
+        System.out.println("Tus cartas");
+        for(Carta carta: cartas){
+            carta.mostrarCarta();
+        }
+        System.out.println("-------------------");
+
+    }
 
 
 }

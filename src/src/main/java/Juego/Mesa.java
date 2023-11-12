@@ -8,7 +8,10 @@ public class Mesa implements Serializable {
     private ArrayList<Jugador> jugadores = new ArrayList<>(4);
     private double codMesa;
     private Baraja baraja;
-    private double apuestaMasAlta;
+    private float apuestaMasAlta;
+    private int turno=0;
+    private boolean mus=true;
+
 
     public Mesa(double codMesa){
         //Creamos una mesa desde 0
@@ -53,11 +56,37 @@ public class Mesa implements Serializable {
         return apuestaMasAlta;
     }
 
-    public void setApuestaMasAlta(double apuestaMasAlta) {
+    public void setApuestaMasAlta(float apuestaMasAlta) {
         this.apuestaMasAlta = apuestaMasAlta;
     }
 
     public int getNumPlayers(){
         return this.jugadores.size();
+    }
+
+    public void pasarTurno(){
+        this.turno=(this.turno+1)%4;
+    }
+
+    public void cortar(){
+        this.mus = false;
+    }
+
+    public int getTurno(){
+        return this.turno;
+    }
+
+    public Carta sacarCarta(){
+        return this.baraja.sacarCarta();
+    }
+    public void setTurno(int turno){this.turno=turno;}
+
+
+    public boolean isMus() {
+        return mus;
+    }
+
+    public void setMus(boolean mus) {
+        this.mus = mus;
     }
 }

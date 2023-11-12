@@ -18,15 +18,29 @@ import java.util.Scanner;
 public class Jugador implements Serializable {
     private String name;
     private double cartera;
+
+    public Jugador(){
+
+    }
     public Jugador(String name, double cartera){
         this.name = name;
         this.cartera = cartera;
     }
+    private void setName(String name1){
+        this.name=name1;
+    }
     public String getName(){
         return this.name;
     }
+    private void setCartera(double cartera){
+        this.cartera=cartera;
+    }
 
-    public static boolean logIn(Scanner sc,Jugador jugador){
+    public double getCartera() {
+        return cartera;
+    }
+
+    public static boolean logIn(Scanner sc, Jugador jugador){
         System.out.println("Introduce tu nombre de usuario");
         String user = sc.nextLine();
         System.out.println("Introduce la contraseña");
@@ -48,7 +62,8 @@ public class Jugador implements Serializable {
                         String cartera = hijo.getElementsByTagName("cartera").item(0).getTextContent();
                         System.out.println("Creditos disponibles: "+cartera);
 
-                        jugador = new Jugador(nombre,Double.parseDouble(cartera));
+                        jugador.setName(nombre);
+                        jugador.setCartera(Double.parseDouble(cartera));
 
                         return true;
                     }

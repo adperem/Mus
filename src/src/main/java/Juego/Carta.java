@@ -1,6 +1,8 @@
 package Juego;
 
-public class Carta {
+import java.io.Serializable;
+
+public class Carta implements Serializable {
 
     public enum Palo{
         OROS("Oros",0),COPAS("Copas",1),BASTOS("Bastos",2),ESPADAS("Espadas",3);
@@ -44,5 +46,9 @@ public class Carta {
 
     public Palo getPalo() {
         return palo;
+    }
+
+    public void mostrarCarta(){
+        System.out.println(this.numero+" de "+this.palo);
     }
 }
