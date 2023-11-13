@@ -11,12 +11,14 @@ public class Mesa implements Serializable {
     private float apuestaMasAlta;
     private int turno=0;
     private boolean mus=true;
+    private ArrayList<String> ip;
 
 
     public Mesa(double codMesa){
         //Creamos una mesa desde 0
         this.baraja = new Baraja();
         this.codMesa = codMesa;
+        this.ip=new ArrayList<>(4);
 
     }
 
@@ -88,5 +90,13 @@ public class Mesa implements Serializable {
 
     public void setMus(boolean mus) {
         this.mus = mus;
+    }
+
+    public void addIp(String ip){
+        this.ip.add(ip);
+    }
+
+    public ArrayList<String> getIps(){
+        return this.ip;
     }
 }
