@@ -45,7 +45,7 @@ public class AtenderPeticion extends Thread{
             }else{
 
                 int i=0;
-                int numJugador = 0;
+                int numJugador;
                 boolean aniadido = false;
                 while(0< mesas.size() && !aniadido ){
 

@@ -4,8 +4,9 @@ import Juego.Carta;
 import Juego.Jugador;
 import Juego.Mesa;
 
-
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -55,20 +56,96 @@ public class Client {
                     if (numJugador == 1) {
                         //si es el primer jugador recibe la mesa del servidor
                         Mesa mesa = (Mesa) in.readObject();
-                        String ip = mesa.getIps().get(numJugador + 1);
+                        String ip = mesa.getIps().get(numJugador);
                         System.out.println("Te has unido a la mesa");
-                        mano.add(mesa.sacarCarta());
-                        //mostrarCartas(mano);
-                        enviarMesa(mesa, mesa.getIps().get(numJugador + 1), numJugador);
+                        for (int i = 0; i < 4; i++) {
+                            mano.add(mesa.sacarCarta());
+                            enviarMesa(mesa, ip, numJugador);
+                            mesa = recibirMesa(numJugador);
+                        }
+
+                        mostrarCartas(mano);
+                        System.out.println();
+                        System.out.println("Seleccione");
+                        System.out.println("1 - Mus");
+                        System.out.println("2 - Cortar ");
+                        switch (Integer.parseInt(sc.nextLine())){
+                            case 1:
+                                enviarMesa(mesa,ip,numJugador);
+                                break;
+                            case 2:
+                                mesa.setMus(false);
+                                enviarMesa(mesa,ip,numJugador);
+                                break;
+                        }
+                        mesa = recibirMesa(numJugador);
+                        if(mesa.isMus()){
+                            System.out.println("Mus aceptado");
+                            System.out.println("Indique separadas por comas las cartes que desea eliminar");
+                            String eliminar = sc.nextLine();
+                            String[] deleteCartas=eliminar.split(",");
+                            for (int j = 3; j >-1 ; j--) {
+                                mano.remove(j);
+                            }
+                            enviarMesa(mesa,ip,numJugador);
+                            mus(mano, ip, numJugador);
+                        }
+                        //grandes(mano,ip,numJugador);
+                        System.out.println("se ha cortado");
+
+
 
                     } else {
                         //si es otro jugador recibe la mesa del jugador anterior
                         System.out.println("Te has unido a la mesa");
                         Mesa mesa = recibirMesa(numJugador);
-                        mano.add(mesa.sacarCarta());
-                        //mostrarCartas(mano);
+                        String ip;
+                        if (numJugador==4){
+                            ip = mesa.getIps().get(0);
+                        }else {
+                            ip = mesa.getIps().get(numJugador);
+                        }
 
-                        enviarMesa(mesa, mesa.getIps().get(numJugador + 1), numJugador);
+                        for (int i = 0; i < 4; i++) {
+
+                            mano.add(mesa.sacarCarta());
+                            if (numJugador==4){
+                                enviarMesa(mesa,ip,0);
+                            }else{
+                                enviarMesa(mesa,ip,numJugador);
+                            }
+                            mesa=recibirMesa(numJugador);
+                        }
+                        mostrarCartas(mano);
+                        System.out.println();
+                        System.out.println("Seleccione");
+                        System.out.println("1 - Mus");
+                        System.out.println("2 - Cortar ");
+                        if(sc.nextLine().equals("2")){
+                            mesa.setMus(false);
+                        }
+                        enviarMesa(mesa,ip,numJugador);
+                        mesa = recibirMesa(numJugador);
+                        if(mesa.isMus()){
+                            System.out.println("Mus aceptado");
+                            System.out.println("Indique separadas por comas las cartes que desea eliminar");
+                            String eliminar = sc.nextLine();
+                            String[] deleteCartas=eliminar.split(",");
+                            for (int j = 3; j >-1 ; j--) {
+                                mano.remove(j);
+                            }
+                            enviarMesa(mesa,ip,numJugador);
+                            mus(mano, ip, numJugador);
+                        }
+                        System.out.println("se ha cortado");
+
+
+                        //mus(mano,ip,numJugador);
+
+
+
+
+
 
 
                     }
@@ -76,12 +153,10 @@ public class Client {
                     break;
 
             }
-            } catch(IOException e){
-                throw new RuntimeException(e);
-            } catch(ClassNotFoundException e){
+            } catch(IOException | ClassNotFoundException e){
                 throw new RuntimeException(e);
             }
-        }
+    }
 
 
 
@@ -177,7 +252,9 @@ public class Client {
         public static void mostrarCartas (ArrayList < Carta > cartas) {
             System.out.println("-------------------");
             System.out.println("Tus cartas");
+            int i=0;
             for (Carta carta : cartas) {
+                System.out.print(i+") ");
                 carta.mostrarCarta();
             }
             System.out.println("-------------------");
@@ -245,10 +322,13 @@ public class Client {
         public static Mesa recibirMesa ( int numJugador){
 
             try (ServerSocket ss = new ServerSocket(1234 + numJugador)) {
+                int a=1234 + numJugador;
+                //System.out.println(numJugador+" recibe por "+a);
                 Socket sRecibir = ss.accept();
 
                 ObjectInputStream in = new ObjectInputStream(sRecibir.getInputStream());
-                return (Mesa) in.readObject();
+                Mesa mesa =(Mesa) in.readObject();
+                return mesa;
 
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
@@ -257,8 +337,14 @@ public class Client {
         }
 
         public static void enviarMesa (Mesa mesa, String ip,int numJugador){
-            if (numJugador + 1 == 5) numJugador = 0;
+        int a =1234+numJugador+1;
+            //System.out.println(numJugador+" envia a "+a);
+            if(numJugador==4){
+                numJugador=0;
+            }
+
             try (Socket sEnviar = new Socket(ip, 1234 + numJugador + 1)) {
+
 
                 ObjectOutputStream out = new ObjectOutputStream(sEnviar.getOutputStream());
 
@@ -268,6 +354,112 @@ public class Client {
                 e.printStackTrace();
             }
         }
+
+        public static void mus(ArrayList<Carta> mano,String ip,int numJugador){
+
+            int numJugadorEnviar=numJugador;
+            if(numJugador==4){
+                numJugadorEnviar=0;
+            }
+            Scanner sc = new Scanner(System.in);
+            Mesa mesa;
+            int numCartas= mano.size();
+            for (int i = 0; i < 4- numCartas; i++) {
+                mesa = recibirMesa(numJugador);
+                mano.add(mesa.sacarCarta());
+                enviarMesa(mesa,ip,numJugadorEnviar);
+            }
+
+            mesa = recibirMesa(numJugador);
+            if(mesa.isMus()){
+                mostrarCartas(mano);
+
+                System.out.println();
+                System.out.println("Seleccione un opcion");
+                System.out.println("1 - Mus");
+                System.out.println("2 - Cortar");
+                switch (Integer.parseInt(sc.nextLine())){
+                    case 1:
+                        enviarMesa(mesa,ip,numJugador);
+                        break;
+                    case 2:
+                        mesa.setMus(false);
+                        enviarMesa(mesa,ip,numJugador);
+                        break;
+                }
+            }else {
+                enviarMesa(mesa,ip,numJugadorEnviar);
+            }
+            mesa = recibirMesa(numJugador);
+            if (mesa.isMus()){
+                System.out.println("Mus aceptado");
+                System.out.println("Indique separadas por comas las cartes que desea eliminar");
+                String eliminar = sc.nextLine();
+                String[] deleteCartas=eliminar.split(",");
+                for (int j = 3; j >-1 ; j--) {
+                    mano.remove(j);
+                }
+                enviarMesa(mesa,ip,numJugadorEnviar);
+                mus(mano, ip, numJugador);
+            } else {
+                System.out.println("mus denegado");
+                enviarMesa(mesa,ip,numJugadorEnviar);
+            }
+        }
+
+        public static void  grandes(ArrayList<Carta> mano,String ip,int numJugador){
+            Mesa mesa = recibirMesa(numJugador);
+            if(numJugador==1 && mesa.getApuestaMasAlta()==0.0){
+
+            }
+            if(numJugador==4){
+                if(mesa.getApuestaMasAlta()==0.0){
+                    //enviar al jugador 1
+                }else if (Double.toString(mesa.getApuestaMasAlta()).substring(Double.toString(mesa.getApuestaMasAlta()).indexOf(".")).equals("2")){
+                    enviarMesa(mesa,ip,numJugador); //Enviar al jugador 1
+                }else {
+                    System.out.println("1 - Envidar\n2 - Pasar\n3 - Apostar");
+                    Scanner sc = new Scanner(System.in);
+                    switch (Integer.parseInt(sc.nextLine())){
+                        case 1:
+                            System.out.println("Apostamos 2");
+                            break;
+                        case 2:
+                            System.out.println("Pasamos");
+                            break;
+                        case 3:
+                            System.out.println("Apostamos");
+                            break;
+                    }
+                }
+            } else if (numJugador == 2) {
+
+                if(Double.toString(mesa.getApuestaMasAlta()).substring(Double.toString(mesa.getApuestaMasAlta()).indexOf(".")).equals("1")){
+
+                }
+
+
+                System.out.println("1 - Envidar\n2 - Pasar\n3 - Apostar");
+                Scanner sc = new Scanner(System.in);
+                switch (Integer.parseInt(sc.nextLine())){
+                    case 1:
+                        System.out.println("Apostamos 2");
+                        break;
+                    case 2:
+                        System.out.println("Pasamos");
+                        break;
+                    case 3:
+                        System.out.println("Apostamos");
+                        break;
+                }
+            }
+        }
+
+
+
+
+
+
 
 
 

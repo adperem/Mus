@@ -10,7 +10,7 @@ public class Baraja implements Serializable {
 
     public Baraja(){
         for (int i=0; i<4; i++){
-            for (int ii=0; ii<8; ii++){
+            for (int ii=1; ii<9; ii++){
                 this.baraja.add(new Carta(ii, Carta.Palo.getPalo(i)));
             }
             this.baraja.add(new Carta(10, Carta.Palo.getPalo(i)));

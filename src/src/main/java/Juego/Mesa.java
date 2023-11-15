@@ -8,7 +8,7 @@ public class Mesa implements Serializable {
     private ArrayList<Jugador> jugadores = new ArrayList<>(4);
     private double codMesa;
     private Baraja baraja;
-    private float apuestaMasAlta;
+    private double apuestaMasAlta;
     private int turno=0;
     private boolean mus=true;
     private ArrayList<String> ip;
@@ -19,6 +19,7 @@ public class Mesa implements Serializable {
         this.baraja = new Baraja();
         this.codMesa = codMesa;
         this.ip=new ArrayList<>(4);
+        this.apuestaMasAlta = 0.0;
 
     }
 
