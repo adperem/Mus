@@ -28,6 +28,10 @@ public class Carta implements Serializable {
                     throw new IllegalStateException("Unexpected value: " + i);
             }
         }
+
+        public boolean equals(Palo palo){
+            return this.palo.equals(palo.palo);
+        }
     }
 
 
@@ -50,5 +54,13 @@ public class Carta implements Serializable {
 
     public void mostrarCarta(){
         System.out.println(this.numero+" de "+this.palo);
+    }
+
+
+    public boolean equals(Carta carta) {
+        if (this.getPalo().equals(carta.getPalo()) && this.getNumero()==carta.getNumero()){
+            return true;
+        }
+        return false;
     }
 }
