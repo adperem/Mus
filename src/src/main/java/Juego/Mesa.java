@@ -30,40 +30,16 @@ public class Mesa implements Serializable {
             this.apuestas[i][0]=i;
             this.apuestas[i][1]=-1;
         }
+        this.apuestas[2][1]=0;
         this.apuestas[0][1]=-1;
-        this.numRonda=2;//esto luego hay q cambiarlo
+        this.numRonda=0;
         this.equipo= new int[2];
         this.equipo[0]=0;this.equipo[1]=0;
 
 
     }
 
-    public boolean couldJoin(Jugador jugador){
-        if (this.jugadores.isEmpty()) return true;
-        if(this.jugadores.size()==4) return false;
-        for (int i=0;i<this.jugadores.size(); i++) {
-            if(this.jugadores.get(i)!=null){
-                if (this.jugadores.get(i).getName().equals(jugador.getName())) return false;
-            }
 
-        }
-        return true;
-    }
-
-
-    public void joinTable(Jugador jugador){
-        //PRE: jugador se debe poder unir a la mesa
-        //POST: une el jugador a la mesa
-        this.jugadores.add(jugador);
-    }
-
-    public void leftTable(Jugador jugador){
-        //PRE: jugador debe estar en la mesa
-        //POST: quita al jugador de la mesa
-        for(int i=0;i<4;i++){
-            if(this.jugadores.get(i).getName().equals(jugador.getName())) this.jugadores.remove(i);
-        }
-    }
 
 
     public double getCodMesa() {
@@ -71,7 +47,7 @@ public class Mesa implements Serializable {
     }
 
     public int getApuestaMasAlta() {
-        return this.apuestas[numRonda][1];
+        return this.apuestas[this.numRonda][1];
     }
     public int getApuestaMasAlta(int ronda) {
         return this.apuestas[ronda][1];
@@ -153,5 +129,24 @@ public class Mesa implements Serializable {
         this.jugadorCortar=numJugador;
     }
 
+    public boolean finalizado(){
+        return this.equipo[0]>=25 || this.equipo[1]>=25;
+    }
+
+    public void reiniciarPartida(){
+        this.baraja = new Baraja();
+        this.baraja.barajear();
+
+        this.numJugadorApuestaMasAlta = -1;
+        this.apuestas= new int[6][2];
+        for (int i = 0; i < 6; i++) {
+            this.apuestas[i][0]=i;
+            this.apuestas[i][1]=-1;
+        }
+        this.apuestas[2][1]=0;
+        this.apuestas[0][1]=-1;
+        this.numRonda=0;
+
+    }
 
 }
