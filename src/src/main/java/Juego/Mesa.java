@@ -143,15 +143,18 @@ public class Mesa implements Serializable {
         this.baraja.barajear();
 
         this.numJugadorApuestaMasAlta = -1;
-        this.apuestas= new int[6][2];
         for (int i = 0; i < 6; i++) {
             this.apuestas[i][0]=i;
             this.apuestas[i][1]=-1;
         }
         this.apuestas[2][1]=0;
-        this.apuestas[3][1]=0;
+        this.apuestas[4][1]=0;
+        this.apuestas[5][1]=0;
+        this.apuestas[3][1]=-1;
         this.apuestas[0][1]=-1;
         this.numRonda=0;
+
+        this.pasadas=0;
 
     }
 
