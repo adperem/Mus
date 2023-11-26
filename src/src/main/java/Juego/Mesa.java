@@ -16,6 +16,7 @@ public class Mesa implements Serializable {
     private int apuestas[][]; //Si un jugador iguala, la apuesta pasa a ser negativa
     private int equipo[]; //guarda las puntuaciones
     private int jugadorCortar;
+    private int pasadas;
 
 
     public Mesa(double codMesa){
@@ -31,10 +32,14 @@ public class Mesa implements Serializable {
             this.apuestas[i][1]=-1;
         }
         this.apuestas[2][1]=0;
+        this.apuestas[4][1]=0;
+        this.apuestas[5][1]=0;
+        this.apuestas[3][1]=-1;
         this.apuestas[0][1]=-1;
         this.numRonda=0;
         this.equipo= new int[2];
         this.equipo[0]=0;this.equipo[1]=0;
+        this.pasadas=0;
 
 
     }
@@ -144,9 +149,22 @@ public class Mesa implements Serializable {
             this.apuestas[i][1]=-1;
         }
         this.apuestas[2][1]=0;
+        this.apuestas[3][1]=0;
         this.apuestas[0][1]=-1;
         this.numRonda=0;
 
     }
 
+    public int getPasadas() {
+        return pasadas;
+    }
+
+    public void setPasadas(int pasadas) {
+        this.pasadas = pasadas;
+    }
+
+    public void showPuntuaciones(){
+        System.out.println("Equipo 1: "+this.equipo[0]);
+        System.out.println("Equipo 2: "+this.equipo[1]);
+    }
 }

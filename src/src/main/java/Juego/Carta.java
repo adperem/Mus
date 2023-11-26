@@ -57,6 +57,7 @@ public class Carta implements Serializable {
     }
 
 
+
     public boolean equals(Carta carta) {
         if (this.getPalo().equals(carta.getPalo()) && this.getNumero()==carta.getNumero()){
             return true;
