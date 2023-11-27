@@ -17,6 +17,7 @@ public class Mesa implements Serializable {
     private int equipo[]; //guarda las puntuaciones
     private int jugadorCortar;
     private int pasadas;
+    private ArrayList<ArrayList<Carta>> manos;
 
 
     public Mesa(double codMesa){
@@ -40,7 +41,7 @@ public class Mesa implements Serializable {
         this.equipo= new int[2];
         this.equipo[0]=0;this.equipo[1]=0;
         this.pasadas=0;
-
+        this.manos=new ArrayList<>(3);
 
     }
 
@@ -139,10 +140,13 @@ public class Mesa implements Serializable {
     }
 
     public void reiniciarPartida(){
+
         this.baraja = new Baraja();
         this.baraja.barajear();
-
+        this.codMesa = codMesa;
         this.numJugadorApuestaMasAlta = -1;
+        this.apuestas= new int[6][2];
+        this.mus=true;
         for (int i = 0; i < 6; i++) {
             this.apuestas[i][0]=i;
             this.apuestas[i][1]=-1;
@@ -155,6 +159,8 @@ public class Mesa implements Serializable {
         this.numRonda=0;
 
         this.pasadas=0;
+        this.manos=new ArrayList<>(3);
+        this.jugadorCortar=0;
 
     }
 
@@ -170,4 +176,14 @@ public class Mesa implements Serializable {
         System.out.println("Equipo 1: "+this.equipo[0]);
         System.out.println("Equipo 2: "+this.equipo[1]);
     }
+
+
+    public void addMano(ArrayList<Carta> mano){
+        this.manos.add(mano);
+    }
+
+    public ArrayList<ArrayList<Carta>> getManos(){
+        return this.manos;
+    }
+
 }
