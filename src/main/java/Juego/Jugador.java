@@ -49,7 +49,7 @@ public class Jugador implements Serializable {
         try{
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             DocumentBuilder db = dbf.newDocumentBuilder();
-            Document d = db.parse(new File("src//src//main//resources//Jugadores.xml"));
+            Document d = db.parse(new File("src//main//resources//Jugadores.xml"));
 
             NodeList list = d.getElementsByTagName("jugador");
 
