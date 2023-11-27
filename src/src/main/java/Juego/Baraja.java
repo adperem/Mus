@@ -10,7 +10,7 @@ public class Baraja implements Serializable {
 
     public Baraja(){
         for (int i=0; i<4; i++){
-            for (int ii=0; ii<8; ii++){
+            for (int ii=1; ii<9; ii++){
                 this.baraja.add(new Carta(ii, Carta.Palo.getPalo(i)));
             }
             this.baraja.add(new Carta(10, Carta.Palo.getPalo(i)));
@@ -33,6 +33,20 @@ public class Baraja implements Serializable {
         Collections.shuffle(this.baraja);
     }
 
+    public static Carta getCartaAlta(ArrayList<Carta> mano){
+        Carta mayor=mano.get(0);
+        for (Carta c : mano){
+            if (c.getNumero()>mayor.getNumero()) mayor=c;
+        }
+        return mayor;
+    }
 
+    public static Carta getCartaBaja(ArrayList<Carta> mano){
+        Carta menor=mano.get(0);
+        for (Carta c : mano){
+            if (c.getNumero()>menor.getNumero()) menor=c;
+        }
+        return menor;
+    }
 
 }

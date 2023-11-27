@@ -1,6 +1,8 @@
 package Juego;
 
-public class Carta {
+import java.io.Serializable;
+
+public class Carta implements Serializable {
 
     public enum Palo{
         OROS("Oros",0),COPAS("Copas",1),BASTOS("Bastos",2),ESPADAS("Espadas",3);
@@ -26,6 +28,10 @@ public class Carta {
                     throw new IllegalStateException("Unexpected value: " + i);
             }
         }
+
+        public boolean equals(Palo palo){
+            return this.palo.equals(palo.palo);
+        }
     }
 
 
@@ -44,5 +50,18 @@ public class Carta {
 
     public Palo getPalo() {
         return palo;
+    }
+
+    public void mostrarCarta(){
+        System.out.println(this.numero+" de "+this.palo);
+    }
+
+
+
+    public boolean equals(Carta carta) {
+        if (this.getPalo().equals(carta.getPalo()) && this.getNumero()==carta.getNumero()){
+            return true;
+        }
+        return false;
     }
 }
