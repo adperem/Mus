@@ -9,92 +9,133 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Set;
 
-public class AtenderPeticion extends Thread{
+public class AtenderPeticion extends Thread {
 
     private Socket socket;
-    //private HashMap<Mesa, ArrayList<String>> mesas;
     private int numJugador;
-    private LinkedList<Mesa> mesas;
+    private LinkedList<Mesa> mesasPublicas;
+    private LinkedList<Mesa> mesasPrivadas;
 
-    public AtenderPeticion(Socket socket, LinkedList<Mesa> mesas){
+    public AtenderPeticion(Socket socket, LinkedList<Mesa> mesasPublicas, LinkedList<Mesa> mesasPrivadas) {
         this.socket = socket;
-        this.mesas = mesas;
+        this.mesasPublicas = mesasPublicas;
+        this.mesasPrivadas = mesasPrivadas;
     }
 
-    public void run(){
-        try(ObjectOutputStream out = new ObjectOutputStream(this.socket.getOutputStream())){
+    public void run() {
+        try (ObjectOutputStream out = new ObjectOutputStream(this.socket.getOutputStream());
+             DataInputStream in = new DataInputStream(socket.getInputStream())) {
 
-            if(mesas.size()==0){
-                //Inicio del server sin mesas
-                Mesa mesa = new Mesa(1);
+            //recibo el codigo de la mesa. si no hay mesa con ese codigo la
+
+
+            String accion = in.readLine();
+
+            //Se quiere crear una nueva mesa
+            if (accion.equals("NEW")) {
+                //Creamos una mesa
+
+                double codMesa = 0;
+                for (Mesa mesa : mesasPrivadas) {
+                    if (mesa.getCodMesa() == codMesa) codMesa++;
+                }
+
+
+                Mesa mesa = new Mesa(codMesa);
                 mesa.addIp(this.socket.getInetAddress().getHostAddress());
-                mesas.add(mesa);
-                
-                ArrayList<String> players = new ArrayList<>(4);
+                mesasPrivadas.add(mesa);
 
-                while(players.size()!=4){ //Esperamos a que el num de jugadores sea 4
+                while (mesa.getNumPlayers() != 4) { //Esperamos a que el num de jugadores sea 4
                     Thread.sleep(1000);
-                    players = mesa.getIps();
-                    System.out.println("Jugadores unidos: "+players.size());
+                    System.out.println("Jugadores unidos: " + mesa.getNumPlayers());
                 }
+                out.writeDouble(codMesa);
+                out.writeInt(1); // Enviamos el numJugador
+                out.writeObject(mesa);
 
-                out.writeObject(1); // Enviamos el numJugador
-                out.writeObject(mesa); // Enviamos la mesa
-                System.out.println("Se ha unido un jugador");
-
-            }else{
-
-                int i=0;
-                int numJugador;
-                boolean aniadido = false;
-                while(0< mesas.size() && !aniadido ){
-
-                    if(mesas.get(i).getIps().size()<4){
-
-                        numJugador = mesas.get(i).getIps().size();
-                        mesas.get(i).addIp(this.socket.getInetAddress().getHostAddress());
-                        aniadido=true;
-
-
+            } else if (accion.equals("JOIN")) {
+                //nos unimos a una mesa
+                double codMesa = in.readDouble();
+                Mesa mesa = null;
+                while (mesa == null) {
+                    for (Mesa mesa1 : mesasPrivadas) {
+                        if (mesa1.getCodMesa() == codMesa) mesa = mesa1;
                     }
-                    i++;
                 }
-                i--;
-                if (aniadido){
-                    ArrayList<String> players = new ArrayList<>(4);
-                    numJugador = mesas.get(i).getIps().size();
-                    while(mesas.get(i).getIps().size()!=4){ //Esperamos a que el num de jugadores sea 4
-                        Thread.sleep(1000);
-                        players = mesas.get(i).getIps();
-                        System.out.println("Jugadores unidos: "+players.size());
-                    }
-
-                    //out.writeObject(players.get(numJugador));// Enviamos la ip de sig jugador
-                    out.writeObject(numJugador); // Enviamos el numJugador
-                    out.writeObject(mesas.get(i)); // Enviamos la mesa
-                    System.out.println("Se ha unido un jugador");
-                }else {
-                    Mesa mesa = new Mesa(mesas.size()+1);
+                if (mesa.getNumPlayers() != 4) {
                     mesa.addIp(this.socket.getInetAddress().getHostAddress());
-                    mesas.add(mesa);
+                    out.writeObject(mesa.getNumPlayers());
+                    out.writeObject(mesa);
+                } else out.writeObject(null);
 
-                    ArrayList<String> players = new ArrayList<>(4);
-                    numJugador = mesas.get(i).getIps().size();
-                    while(players.size()!=4){ //Esperamos a que el num de jugadores sea 4
+
+            } else if (accion.equals("PLAY")) {
+
+                if (mesasPublicas.size() == 0) {
+                    //Inicio del server sin mesas
+                    Mesa mesa = new Mesa(1);
+                    mesa.addIp(this.socket.getInetAddress().getHostAddress());
+                    mesasPublicas.add(mesa);
+
+
+                    while (mesa.getNumPlayers() != 4) { //Esperamos a que el num de jugadores sea 4
                         Thread.sleep(1000);
-                        players = mesa.getIps();
-                        System.out.println("Jugadores unidos: "+players.size());
+                        System.out.println("Jugadores unidos: " + mesa.getNumPlayers());
                     }
 
-                    //out.writeObject(players.get(numJugador));// Enviamos la ip de sig jugador
                     out.writeObject(1); // Enviamos el numJugador
                     out.writeObject(mesa); // Enviamos la mesa
                     System.out.println("Se ha unido un jugador");
-                }
 
+                } else {
+                    int i = 0;
+                    int numJugador;
+                    boolean aniadido = false;
+                    while (!aniadido) {
+
+                        if (mesasPublicas.get(i).getNumPlayers() < 4) {
+
+                            numJugador = mesasPublicas.get(i).getNumPlayers();
+                            mesasPublicas.get(i).addIp(this.socket.getInetAddress().getHostAddress());
+                            aniadido = true;
+                        }
+                        i++;
+                    }
+                    i--;
+                    if (aniadido) {
+
+                        Mesa mesa = mesasPublicas.get(i);
+                        numJugador = mesa.getNumPlayers();
+
+                        while (mesa.getNumPlayers() != 4) { //Esperamos a que el num de jugadores sea 4
+                            Thread.sleep(1000);
+                            System.out.println("Jugadores unidos: " + mesa.getNumPlayers());
+                        }
+
+                        out.writeObject(numJugador); // Enviamos el numJugador
+                        out.writeObject(mesa); // Enviamos la mesa
+
+                    } else {
+                        Mesa mesa = new Mesa(1);
+                        mesa.addIp(this.socket.getInetAddress().getHostAddress());
+                        mesasPublicas.add(mesa);
+
+
+                        while (mesa.getNumPlayers() != 4) { //Esperamos a que el num de jugadores sea 4
+                            Thread.sleep(1000);
+                            System.out.println("Jugadores unidos: " + mesa.getNumPlayers());
+                        }
+
+                        out.writeObject(1); // Enviamos el numJugador
+                        out.writeObject(mesa); // Enviamos la mesa
+                        System.out.println("Se ha unido un jugador");
+                        ;
+                    }
+                }
             }
 
-        }catch (IOException e){
+
+        } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);

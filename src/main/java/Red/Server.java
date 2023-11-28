@@ -13,10 +13,9 @@ public class Server implements Serializable {
 
 
     public static void main(String[] args) {
-        //ArrayList<String> players = new ArrayList<>(4);
-        //HashMap<Mesa, ArrayList<String>> partidas = new HashMap<>();
-        LinkedList<Mesa> partidas = new LinkedList<>();
-        //LinkedList<Mesa,String> partidas = new LinkedList<>();
+
+        LinkedList<Mesa> partidasPublicas = new LinkedList<>();
+        LinkedList<Mesa> partidasPrivadas = new LinkedList<>();
 
 
         try(ServerSocket ss = new ServerSocket(3333)) {
@@ -25,7 +24,7 @@ public class Server implements Serializable {
                 try {
                     Socket s = ss.accept();
 
-                    pool.execute(new AtenderPeticion(s,partidas));
+                    pool.execute(new AtenderPeticion(s,partidasPublicas,partidasPrivadas));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

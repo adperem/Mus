@@ -5,12 +5,12 @@ import java.util.ArrayList;
 
 public class Mesa implements Serializable {
 
-    private ArrayList<Jugador> jugadores = new ArrayList<>(4);
+    //private ArrayList<Jugador> jugadores = new ArrayList<>(4);
     private double codMesa;
     private Baraja baraja;
     private int numJugadorApuestaMasAlta;
-    private int turno=0;
-    private boolean mus=true;
+    private int turno = 0;
+    private boolean mus = true;
     private ArrayList<String> ip;
     private int numRonda;
     private int apuestas[][]; //Si un jugador iguala, la apuesta pasa a ser negativa
@@ -20,32 +20,31 @@ public class Mesa implements Serializable {
     private ArrayList<ArrayList<Carta>> manos;
 
 
-    public Mesa(double codMesa){
+    public Mesa(double codMesa) {
         //Creamos una mesa desde 0
         this.baraja = new Baraja();
         this.baraja.barajear();
         this.codMesa = codMesa;
-        this.ip=new ArrayList<>(4);
+        this.ip = new ArrayList<>(4);
         this.numJugadorApuestaMasAlta = -1;
-        this.apuestas= new int[6][2];
+        this.apuestas = new int[6][2];
         for (int i = 0; i < 6; i++) {
-            this.apuestas[i][0]=i;
-            this.apuestas[i][1]=-1;
+            this.apuestas[i][0] = i;
+            this.apuestas[i][1] = -1;
         }
-        this.apuestas[2][1]=0;
-        this.apuestas[4][1]=0;
-        this.apuestas[5][1]=0;
-        this.apuestas[3][1]=-1;
-        this.apuestas[0][1]=-1;
-        this.numRonda=0;
-        this.equipo= new int[2];
-        this.equipo[0]=0;this.equipo[1]=0;
-        this.pasadas=0;
-        this.manos=new ArrayList<>(3);
+        this.apuestas[2][1] = 0;
+        this.apuestas[4][1] = 0;
+        this.apuestas[5][1] = 0;
+        this.apuestas[3][1] = -1;
+        this.apuestas[0][1] = -1;
+        this.numRonda = 0;
+        this.equipo = new int[2];
+        this.equipo[0] = 0;
+        this.equipo[1] = 0;
+        this.pasadas = 0;
+        this.manos = new ArrayList<>(3);
 
     }
-
-
 
 
     public double getCodMesa() {
@@ -55,35 +54,39 @@ public class Mesa implements Serializable {
     public int getApuestaMasAlta() {
         return this.apuestas[this.numRonda][1];
     }
+
     public int getApuestaMasAlta(int ronda) {
         return this.apuestas[ronda][1];
     }
 
-    public void setApuestaMasAlta(int apuestaMasAlta,int numJugador) {
-        this.apuestas[numRonda][1]=apuestaMasAlta;
-        this.numJugadorApuestaMasAlta =numJugador;
+    public void setApuestaMasAlta(int apuestaMasAlta, int numJugador) {
+        this.apuestas[numRonda][1] = apuestaMasAlta;
+        this.numJugadorApuestaMasAlta = numJugador;
     }
 
     public int getNumPlayers(){
-        return this.jugadores.size();
+        return this.ip.size();
     }
 
-    public void pasarTurno(){
-        this.turno=(this.turno+1)%4;
+    public void pasarTurno() {
+        this.turno = (this.turno + 1) % 4;
     }
 
-    public void cortar(){
+    public void cortar() {
         this.mus = false;
     }
 
-    public int getTurno(){
+    public int getTurno() {
         return this.turno;
     }
 
-    public Carta sacarCarta(){
+    public Carta sacarCarta() {
         return this.baraja.sacarCarta();
     }
-    public void setTurno(int turno){this.turno=turno;}
+
+    public void setTurno(int turno) {
+        this.turno = turno;
+    }
 
 
     public boolean isMus() {
@@ -94,16 +97,16 @@ public class Mesa implements Serializable {
         this.mus = mus;
     }
 
-    public void addIp(String ip){
+    public void addIp(String ip) {
         this.ip.add(ip);
     }
 
-    public ArrayList<String> getIps(){
+    public ArrayList<String> getIps() {
         return this.ip;
     }
 
-    public boolean puedeApostar(int apuesta){
-        return this.apuestas[numRonda][1]<apuesta;
+    public boolean puedeApostar(int apuesta) {
+        return this.apuestas[numRonda][1] < apuesta;
     }
 
     public int getNumJugadorApuestaMasAlta() {
@@ -122,45 +125,46 @@ public class Mesa implements Serializable {
         this.numRonda = numRonda;
     }
 
-    public void addPuntos(int puntos,int numJugador){
-        if(numJugador==1 || numJugador==3) this.equipo[0]=this.equipo[0]+puntos;
-        else this.equipo[1]=this.equipo[1]+puntos;
+    public void addPuntos(int puntos, int numJugador) {
+        if (numJugador == 1 || numJugador == 3) this.equipo[0] = this.equipo[0] + puntos;
+        else this.equipo[1] = this.equipo[1] + puntos;
 
     }
 
-    public int getJugadorCortar(){
+    public int getJugadorCortar() {
         return this.jugadorCortar;
     }
-    public void setJugadorCortar(int numJugador){
-        this.jugadorCortar=numJugador;
+
+    public void setJugadorCortar(int numJugador) {
+        this.jugadorCortar = numJugador;
     }
 
-    public boolean finalizado(){
-        return this.equipo[0]>=25 || this.equipo[1]>=25;
+    public boolean finalizado() {
+        return this.equipo[0] >= 25 || this.equipo[1] >= 25;
     }
 
-    public void reiniciarPartida(){
+    public void reiniciarPartida() {
 
         this.baraja = new Baraja();
         this.baraja.barajear();
         this.codMesa = codMesa;
         this.numJugadorApuestaMasAlta = -1;
-        this.apuestas= new int[6][2];
-        this.mus=true;
+        this.apuestas = new int[6][2];
+        this.mus = true;
         for (int i = 0; i < 6; i++) {
-            this.apuestas[i][0]=i;
-            this.apuestas[i][1]=-1;
+            this.apuestas[i][0] = i;
+            this.apuestas[i][1] = -1;
         }
-        this.apuestas[2][1]=0;
-        this.apuestas[4][1]=0;
-        this.apuestas[5][1]=0;
-        this.apuestas[3][1]=-1;
-        this.apuestas[0][1]=-1;
-        this.numRonda=0;
+        this.apuestas[2][1] = 0;
+        this.apuestas[4][1] = 0;
+        this.apuestas[5][1] = 0;
+        this.apuestas[3][1] = -1;
+        this.apuestas[0][1] = -1;
+        this.numRonda = 0;
 
-        this.pasadas=0;
-        this.manos=new ArrayList<>(3);
-        this.jugadorCortar=0;
+        this.pasadas = 0;
+        this.manos = new ArrayList<>(3);
+        this.jugadorCortar = 0;
 
     }
 
@@ -172,17 +176,17 @@ public class Mesa implements Serializable {
         this.pasadas = pasadas;
     }
 
-    public void showPuntuaciones(){
-        System.out.println("Equipo 1: "+this.equipo[0]);
-        System.out.println("Equipo 2: "+this.equipo[1]);
+    public void showPuntuaciones() {
+        System.out.println("Equipo 1: " + this.equipo[0]);
+        System.out.println("Equipo 2: " + this.equipo[1]);
     }
 
 
-    public void addMano(ArrayList<Carta> mano){
+    public void addMano(ArrayList<Carta> mano) {
         this.manos.add(mano);
     }
 
-    public ArrayList<ArrayList<Carta>> getManos(){
+    public ArrayList<ArrayList<Carta>> getManos() {
         return this.manos;
     }
 
