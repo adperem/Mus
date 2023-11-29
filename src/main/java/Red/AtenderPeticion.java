@@ -62,11 +62,11 @@ public class AtenderPeticion extends Thread {
                         if (mesa1.getCodMesa() == codMesa) mesa = mesa1;
                     }
                 }
-                if (mesa.getNumPlayers() != 4) {
+                if (mesa != null && mesa.getNumPlayers() != 4) {
                     mesa.addIp(this.socket.getInetAddress().getHostAddress());
                     out.writeObject(mesa.getNumPlayers());
                     out.writeObject(mesa);
-                } else out.writeObject(null);
+                } else out.writeObject(0);
 
 
             } else if (accion.equals("PLAY")) {

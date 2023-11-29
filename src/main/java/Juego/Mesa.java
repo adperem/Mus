@@ -9,12 +9,11 @@ public class Mesa implements Serializable {
     private double codMesa;
     private Baraja baraja;
     private int numJugadorApuestaMasAlta;
-    private int turno = 0;
     private boolean mus = true;
     private ArrayList<String> ip;
     private int numRonda;
-    private int apuestas[][]; //Si un jugador iguala, la apuesta pasa a ser negativa
-    private int equipo[]; //guarda las puntuaciones
+    private int[][] apuestas; //Si un jugador iguala, la apuesta pasa a ser negativa
+    private final int[] equipo; //guarda las puntuaciones
     private int jugadorCortar;
     private int pasadas;
     private ArrayList<ArrayList<Carta>> manos;
@@ -68,34 +67,25 @@ public class Mesa implements Serializable {
         return this.ip.size();
     }
 
-    public void pasarTurno() {
-        this.turno = (this.turno + 1) % 4;
-    }
+
 
     public void cortar() {
         this.mus = false;
     }
 
-    public int getTurno() {
-        return this.turno;
-    }
+
 
     public Carta sacarCarta() {
         return this.baraja.sacarCarta();
     }
 
-    public void setTurno(int turno) {
-        this.turno = turno;
-    }
 
 
     public boolean isMus() {
         return mus;
     }
 
-    public void setMus(boolean mus) {
-        this.mus = mus;
-    }
+
 
     public void addIp(String ip) {
         this.ip.add(ip);
