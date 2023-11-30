@@ -18,7 +18,8 @@ public class Server implements Serializable {
         LinkedList<Mesa> partidasPrivadas = new LinkedList<>();
 
 
-        try(ServerSocket ss = new ServerSocket(3333)) {
+        try{
+            ServerSocket ss = new ServerSocket(3333);
             ExecutorService pool = Executors.newCachedThreadPool();
             while (true){
                 try {
@@ -26,7 +27,7 @@ public class Server implements Serializable {
 
                     pool.execute(new AtenderPeticion(s,partidasPublicas,partidasPrivadas));
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    e.printStackTrace();
                 }
             }
 

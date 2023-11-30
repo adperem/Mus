@@ -34,11 +34,13 @@ public class Client {
                 case 1: //Nuevo jugador
                     newPlayer(sc, this.jugador);
                     break;
+
                 case 2: //Jugador existente
 
-                    while (!Jugador.logIn(sc, this.jugador)) {
+                    while (!logIn(sc, this.jugador)) {
                         System.out.println("Usuario o contraseña incorrecta");
                     }
+                    break;
 
             }
 
@@ -59,16 +61,17 @@ public class Client {
 
             switch (seleccion) {
                 case 1:
-                    //System.out.println("Introduzca el codigo de la mesa");
 
                     //Solicitar mesa y siguiente jugador
                     Socket socket = new Socket("localhost", 3333);
 
-                    PrintStream p = new PrintStream(socket.getOutputStream());
-                    p.println("PLAY");
+
+                    ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+                    out.writeObject("PLAY");
 
                     ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
                     int numJugador = (int) in.readObject();
+
                     play(in, numJugador);
                     break;
 
@@ -78,8 +81,8 @@ public class Client {
                     try {
                         socket = new Socket("localhost", 3333);
 
-                        p = new PrintStream(socket.getOutputStream());
-                        p.println("NEW");
+                        out = new ObjectOutputStream(socket.getOutputStream());
+                        out.writeObject("NEW");
 
                         in = new ObjectInputStream(socket.getInputStream());
                         double codMesa = in.readDouble();
@@ -97,12 +100,13 @@ public class Client {
                     try {
                         socket = new Socket("localhost", 3333);
 
-                        p = new PrintStream(socket.getOutputStream());
-                        p.println("JOIN");
+                        out = new ObjectOutputStream(socket.getOutputStream());
+                        out.writeObject("JOIN");
 
                         System.out.println("Inserte el codigo de la mesa");
 
-                        p.println(Double.parseDouble(sc.nextLine()));
+                        out.writeObject(Double.parseDouble(sc.nextLine()));
+
 
                         in = new ObjectInputStream(socket.getInputStream());
 
@@ -126,7 +130,7 @@ public class Client {
     }
 
 
-    private static void play(ObjectInputStream in, int numJugador) {
+    private void play(ObjectInputStream in, int numJugador) {
 
         try {
 
@@ -138,7 +142,6 @@ public class Client {
                 Mesa mesa = (Mesa) in.readObject();
                 in.close();
 
-                String ipJ1 = mesa.getIps().get(0);
                 String ip = mesa.getIps().get(numJugador);
                 System.out.println("Te has unido a la mesa");
 
@@ -148,16 +151,12 @@ public class Client {
 
                 ObjectOutputStream out = new ObjectOutputStream(sEnviar.getOutputStream());
                 out.writeObject(mesa);
-                //enviarMesa(mesa, ip, numJugador);
                 ServerSocket ss = new ServerSocket(1234 + numJugador);
-                System.out.println("me pongo a la espera");
                 Socket sRecibir = ss.accept();
-                System.out.println("se han conectado a mi");
                 in = new ObjectInputStream(sRecibir.getInputStream());
                 for (int i = 0; i < 3; i++) {
                     mesa = (Mesa) in.readObject();
                     mano.add(mesa.sacarCarta());
-                    //enviarMesa(mesa, ip, numJugador);
                     out.writeObject(mesa);
                 }
 
@@ -172,14 +171,11 @@ public class Client {
                 }
                 switch (seleccion) {
                     case 1:
-                        //enviarMesa(mesa, ip, numJugador);
                         out.writeObject(mesa);
                         break;
                     case 2:
                         mesa.cortar();
                         mesa.setJugadorCortar(numJugador);
-                        //enviarMesa(mesa, ip, numJugador);
-                        //out.writeObject(mesa);
                         out.writeObject(mesa);
                         break;
                 }
@@ -195,14 +191,12 @@ public class Client {
                     for (int i = 0; i < deleteCartas.length; i++) {
                         mano.remove(delete.get(i));
                     }
-                    //enviarMesa(mesa, ip, numJugador);
                     out.writeObject(mesa);
                     mus(mano, in,out,numJugador);
                 } else {
                     System.out.println("Se ha cortado");
                     mesa.setNumRonda(2);
                     mesa.setNumJugadorApuestaMasAlta(-1);
-                    //enviarMesa(mesa, ip, numJugador);
                     out.writeObject(mesa);
                 }
 
@@ -216,16 +210,9 @@ public class Client {
                     System.out.println("\nPasamos a juego");
                     juego(mano,in,out, numJugador);
                     System.out.println("\nAsignamos puntos");
-                    asignarPuntos(mano, in,out, numJugador);
+                    asignarPuntos(mano, in,out, numJugador,this.jugador);
                     System.out.println("\nPasamos a mus");
                     mano = new ArrayList<>(4);
-                            /*
-                            numJugador = numJugador +1;
-                            if (numJugador == 4) {
-                                ip = mesa.getIps().get(0);
-                            } else {
-                                ip = mesa.getIps().get(numJugador);
-                            }*/
                     mus(mano, in,out,numJugador);
                 }
 
@@ -241,8 +228,6 @@ public class Client {
                 in = new ObjectInputStream(sRecibir.getInputStream());
                 Mesa mesa = (Mesa) in.readObject();
 
-
-                String ipJ1 = mesa.getIps().get(0);
                 String ip;
                 Socket sEnviar;
                 if (numJugador == 4) {
@@ -272,20 +257,18 @@ public class Client {
                     }
                     switch (seleccion) {
                         case 1:
-                            //enviarMesa(mesa, ip, numJugador);
                             out.writeObject(mesa);
                             break;
                         case 2:
                             mesa.cortar();
                             mesa.setJugadorCortar(numJugador);
-                            //enviarMesa(mesa, ip, numJugador);
+
                             out.writeObject(mesa);
                             break;
                     }
                     mesa = (Mesa) in.readObject();
                 }
 
-                //out.writeObject(mesa);
 
 
                 if (mesa.isMus()) {
@@ -299,14 +282,13 @@ public class Client {
                     for (int i = 0; i < deleteCartas.length; i++) {
                         mano.remove(delete.get(i));
                     }
-                    //enviarMesa(mesa, ip, numJugador);
+
                     out.writeObject(mesa);
                     mus(mano, in,out,numJugador);
                 } else {
                     System.out.println("Se ha cortado");
                     mesa.setNumRonda(2);
                     mesa.setNumJugadorApuestaMasAlta(-1);
-                    //enviarMesa(mesa, ip, numJugador);
                     out.writeObject(mesa);
                 }
 
@@ -320,31 +302,21 @@ public class Client {
                     System.out.println("\nPasamos a juego");
                     juego(mano, in,out, numJugador);
                     System.out.println("\nAsignamos puntos");
-                    asignarPuntos(mano, in,out, numJugador);
+                    asignarPuntos(mano, in,out, numJugador,this.jugador);
                     System.out.println("\nPasamos a mus");
                     mano = new ArrayList<>(4);
-                            /*
-                            numJugador = numJugador +1;
-                            if (numJugador == 4) {
-                                ip = mesa.getIps().get(0);
-                            } else {
-                                ip = mesa.getIps().get(numJugador);
-                            }*/
+
                     mesa = (Mesa) in.readObject();
-                    //enviarMesa(mesa, ip, numJugador);
                     out.writeObject(mesa);
+
                     mus(mano, in,out,numJugador);
                 }
 
 
             }
 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        } catch (IOException | ClassNotFoundException | InterruptedException e) {
+            System.out.println("algun error");
         }
 
 
@@ -356,11 +328,6 @@ public class Client {
         System.out.println("Introduce el nombre del jugador");
         String nombre = sc.nextLine();
 
-        while (Jugador.exist(nombre)) {
-            System.out.println("El usuario " + nombre + " ya existe");
-            System.out.println("Introduce el nombre del jugador");
-            nombre = sc.nextLine();
-        }
 
         System.out.println("Introduce una contraseña");
         String passwd = sc.nextLine();
@@ -371,7 +338,7 @@ public class Client {
         System.out.print("Pocesando compra");
         try {
             for (int i = 0; i < 3; i++) {
-                Thread.sleep(1000);
+                Thread.sleep(100);
                 System.out.print(".");
             }
 
@@ -379,17 +346,82 @@ public class Client {
             throw new RuntimeException(e);
         }
         System.out.println("\nPago procesa con exito");
-        Jugador j = new Jugador(sc.nextLine(), cartera, passwd);
+        Jugador j = new Jugador(nombre, cartera, passwd);
+        jugador = j;
 
-        if (!Jugador.singUp(j)) System.out.println("Ha ocurrido un problema");
+        //if (!Jugador.singUp(j)) System.out.println("Ha ocurrido un problema");
+        try{
+            Socket s = new Socket("localhost",3333);
 
+            ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
+            out.writeObject("SINGUP");
+            out.writeObject(j);
+            DataInputStream in = new DataInputStream(s.getInputStream());
+            if (in.readBoolean()) System.out.println("Jugador creado con exito");
+            else System.out.println("Ha ocurrido un problema, vuelve a intentarlo mas tarde");
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Ha ocurrido un error");
+        }
+
+    }
+
+    private static boolean logIn(Scanner sc, Jugador jugador) {
+        //creamos el nuevo jugador
+        System.out.println("Introduce el nombre del jugador");
+        String nombre = sc.nextLine();
+
+
+        System.out.println("Introduce una contraseña");
+        String passwd = sc.nextLine();
+
+
+
+        jugador = new Jugador(nombre, 0, passwd);
+
+
+        try(Socket s = new Socket("localhost",3333)){
+
+
+            ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
+            out.writeObject("LOGIN");
+            out.writeObject(jugador);
+            ObjectInputStream in = new ObjectInputStream(s.getInputStream());
+            boolean log = in.readBoolean();
+            if (log) System.out.println("Sesion iniciada correctamente");
+            else{
+                System.out.println("Ha ocurrido un problema, vuelve a intentarlo mas tarde");
+                return false;
+            }
+            jugador = (Jugador) in.readObject();
+
+            System.out.println("Creditos disponibles: "+jugador.getCartera());
+            return true;
+        } catch (IOException e) {
+            System.out.println("Ha ocurrido un error");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        return false;
+    }
+
+    private static void update(Jugador jugador) {
+
+        try{
+            Socket s = new Socket("localhost",3333);
+
+            ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
+            out.writeObject("UPDATE");
+            out.writeObject(jugador);
+            s.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
 
-    private static void createGame() {
-        //Envia al servidor la orden de crear un mesa nueva
-    }
 
 
     public static void mostrarCartas(ArrayList<Carta> cartas) {
@@ -406,43 +438,6 @@ public class Client {
     }
 
 
-    public static Mesa recibirMesa(int numJugador) {
-
-        try (ServerSocket ss = new ServerSocket(1234 + numJugador)) {
-            int a = 1234 + numJugador;
-            //System.out.println(numJugador+" recibe por "+a);
-            Socket sRecibir = ss.accept();
-
-            ObjectInputStream in = new ObjectInputStream(sRecibir.getInputStream());
-            Mesa mesa = (Mesa) in.readObject();
-            return mesa;
-
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public static void enviarMesa(Mesa mesa, String ip, int numJugador) {
-
-        if (numJugador == 4) numJugador = 0;
-        int a = 1234 + numJugador + 1;
-        //System.out.println(numJugador+" envia a "+a);
-
-
-        try (Socket sEnviar = new Socket(ip, 1234 + numJugador + 1)) {
-
-
-            ObjectOutputStream out = new ObjectOutputStream(sEnviar.getOutputStream());
-
-            out.writeObject(mesa);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Error al enviar al puerto: " + a);
-        }
-    }
-
     public static void mus(ArrayList<Carta> mano,ObjectInputStream in, ObjectOutputStream out, int numJugador) {
 
         try {
@@ -457,7 +452,6 @@ public class Client {
             }
 
             mesa = (Mesa) in.readObject();
-            //System.out.println("entramos a mus");
 
             if (mesa.isMus()) {
                 mostrarCartas(mano);
@@ -502,10 +496,8 @@ public class Client {
                 mesa.setNumJugadorApuestaMasAlta(-1);
                 out.writeObject(mesa);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
         }
 
 
@@ -536,7 +528,7 @@ public class Client {
                                 mostrarCartas(mano);
                                 realizarApuesta(mesa, numJugador);
                             } else {
-                                //System.out.println("No puedes apostar, tu compañero ya ha apostado");
+                                if(mesa.getNumJugadorApuestaMasAlta() == 3) System.out.println("No puedes apostar, tu compañero ya ha apostado");
                             }
 
 
@@ -547,7 +539,7 @@ public class Client {
                                 mostrarCartas(mano);
                                 realizarApuesta(mesa, numJugador);
                             } else {
-                                //System.out.println("No puedes apostar, tu compañero ya ha apostado");
+                                if(mesa.getNumJugadorApuestaMasAlta() == 4) System.out.println("No puedes apostar, tu compañero ya ha apostado");
                             }
 
 
@@ -558,7 +550,7 @@ public class Client {
                                 mostrarCartas(mano);
                                 realizarApuesta(mesa, numJugador);
                             } else {
-                                //System.out.println("No puedes apostar, tu compañero ya ha apostado");
+                                if(mesa.getNumJugadorApuestaMasAlta() == 1) System.out.println("No puedes apostar, tu compañero ya ha apostado");
                             }
 
 
@@ -569,7 +561,7 @@ public class Client {
                                 mostrarCartas(mano);
                                 realizarApuesta(mesa, numJugador);
                             } else {
-                                //System.out.println("No puedes apostar, tu compañero ya ha apostado");
+                                if(mesa.getNumJugadorApuestaMasAlta() == 2) System.out.println("No puedes apostar, tu compañero ya ha apostado");
                             }
 
 
@@ -625,7 +617,7 @@ public class Client {
                             mostrarCartas(mano);
                             realizarApuesta(mesa, numJugador);
                         } else {
-                            //System.out.println("No puedes apostar, tu compañero ya ha apostado");
+                            if(mesa.getNumJugadorApuestaMasAlta() == 3) System.out.println("No puedes apostar, tu compañero ya ha apostado");
                         }
                     }
 
@@ -636,7 +628,7 @@ public class Client {
                         mostrarCartas(mano);
                         realizarApuesta(mesa, numJugador);
                     } else {
-                        //System.out.println("No puedes apostar, tu compañero ya ha apostado");
+                        if(mesa.getNumJugadorApuestaMasAlta() == 4) System.out.println("No puedes apostar, tu compañero ya ha apostado");
                     }
 
 
@@ -647,7 +639,7 @@ public class Client {
                         mostrarCartas(mano);
                         realizarApuesta(mesa, numJugador);
                     } else {
-                        //System.out.println("No puedes apostar, tu compañero ya ha apostado");
+                        if(mesa.getNumJugadorApuestaMasAlta() == 1) System.out.println("No puedes apostar, tu compañero ya ha apostado");
                     }
 
 
@@ -658,7 +650,7 @@ public class Client {
                         mostrarCartas(mano);
                         realizarApuesta(mesa, numJugador);
                     } else {
-                        //System.out.println("No puedes apostar, tu compañero ya ha apostado");
+                        if(mesa.getNumJugadorApuestaMasAlta() == 2) System.out.println("No puedes apostar, tu compañero ya ha apostado");
                     }
 
 
@@ -707,8 +699,7 @@ public class Client {
                             mostrarCartas(mano);
                             realizarApuesta(mesa, numJugador);
                         } else {
-                            //System.out.println("No puedes apostar, tu compañero ya ha apostado");
-
+                            if(mesa.getNumJugadorApuestaMasAlta() == 3) System.out.println("No puedes apostar, tu compañero ya ha apostado");
                         }
                     }
 
@@ -719,7 +710,7 @@ public class Client {
                         mostrarCartas(mano);
                         realizarApuesta(mesa, numJugador);
                     } else {
-                        //System.out.println("No puedes apostar, tu compañero ya ha apostado");
+                        if(mesa.getNumJugadorApuestaMasAlta() == 4) System.out.println("No puedes apostar, tu compañero ya ha apostado");
                     }
 
 
@@ -730,7 +721,7 @@ public class Client {
                         mostrarCartas(mano);
                         realizarApuesta(mesa, numJugador);
                     } else {
-                        // System.out.println("No puedes apostar, tu compañero ya ha apostado");
+                        if(mesa.getNumJugadorApuestaMasAlta() == 1) System.out.println("No puedes apostar, tu compañero ya ha apostado");
                     }
 
 
@@ -741,7 +732,7 @@ public class Client {
                         mostrarCartas(mano);
                         realizarApuesta(mesa, numJugador);
                     } else {
-                        //System.out.println("No puedes apostar, tu compañero ya ha apostado");
+                        if(mesa.getNumJugadorApuestaMasAlta() == 2) System.out.println("No puedes apostar, tu compañero ya ha apostado");
                     }
 
 
@@ -751,7 +742,6 @@ public class Client {
                 out.writeObject(mesa);
                 pares(mano, in,out, numJugador);
             } else {
-                //if (!hayPares(mano)) System.out.println("No tienes pares");
                 if (mesa.getNumJugadorApuestaMasAlta() == numJugador && mesa.getApuestaMasAlta(4) > 0) {
                     //nadie ha igualado
                     mesa.addPuntos(1, numJugador);
@@ -792,7 +782,7 @@ public class Client {
                             mostrarCartas(mano);
                             realizarApuesta(mesa, numJugador);
                         } else {
-                            //System.out.println("No puedes apostar, tu compañero ya ha apostado");
+                            if(mesa.getNumJugadorApuestaMasAlta() == 3) System.out.println("No puedes apostar, tu compañero ya ha apostado");
                         }
                     }
 
@@ -803,7 +793,7 @@ public class Client {
                         mostrarCartas(mano);
                         realizarApuesta(mesa, numJugador);
                     } else {
-                        //System.out.println("No puedes apostar, tu compañero ya ha apostado");
+                        if(mesa.getNumJugadorApuestaMasAlta() == 4) System.out.println("No puedes apostar, tu compañero ya ha apostado");
                     }
 
 
@@ -814,7 +804,7 @@ public class Client {
                         mostrarCartas(mano);
                         realizarApuesta(mesa, numJugador);
                     } else {
-                        //System.out.println("No puedes apostar, tu compañero ya ha apostado");
+                        if(mesa.getNumJugadorApuestaMasAlta() == 1) System.out.println("No puedes apostar, tu compañero ya ha apostado");
                     }
 
 
@@ -825,7 +815,7 @@ public class Client {
                         mostrarCartas(mano);
                         realizarApuesta(mesa, numJugador);
                     } else {
-                        //System.out.println("No puedes apostar, tu compañero ya ha apostado");
+                        if(mesa.getNumJugadorApuestaMasAlta() == 2) System.out.println("No puedes apostar, tu compañero ya ha apostado");
                     }
 
 
@@ -852,7 +842,7 @@ public class Client {
         }
 
     }
-
+/*
     public static void puntos(ArrayList<Carta> mano, String ip, int numJugador) {
         Mesa mesa = recibirMesa(numJugador);
         if (mesa.getNumJugadorApuestaMasAlta() != numJugador && mesa.getNumRonda() == 5 && hayJuego(mano)) {
@@ -927,8 +917,8 @@ public class Client {
 
         }
     }
-
-    public static void asignarPuntos(ArrayList<Carta> mano,ObjectInputStream in, ObjectOutputStream out, int numJugador) {
+*/
+    public static void asignarPuntos(ArrayList<Carta> mano, ObjectInputStream in, ObjectOutputStream out, int numJugador,Jugador jugador) {
 
         try {
             Mesa mesa =  (Mesa) in.readObject();
@@ -1011,7 +1001,7 @@ public class Client {
 
 
                 out.writeObject(mesa);
-                asignarPuntos(mano, in,out, numJugador);
+                asignarPuntos(mano, in,out, numJugador,jugador);
             } else {
 
                 mesa.setNumRonda(8);
@@ -1020,6 +1010,17 @@ public class Client {
 
                 out.writeObject(mesa);
                 if (mesa.finalizado()) {
+
+                    if (mesa.ganador() == 0 && (numJugador ==1 || numJugador == 3)){
+                        jugador.setCartera(jugador.getCartera()+5);
+                        update(jugador);
+                    }
+                    if (mesa.ganador() == 1 && (numJugador ==2 || numJugador == 4)){
+                        jugador.setCartera(jugador.getCartera()+5);
+                        update(jugador);
+                    }
+
+
                     System.out.println("FIN");
                     System.exit(0);
                 }

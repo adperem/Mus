@@ -132,6 +132,10 @@ public class Mesa implements Serializable {
     public boolean finalizado() {
         return this.equipo[0] >= 25 || this.equipo[1] >= 25;
     }
+    public int ganador(){
+        if (this.equipo[0]>=25) return 0;
+        return 1;
+    }
 
     public void reiniciarPartida() {
 
