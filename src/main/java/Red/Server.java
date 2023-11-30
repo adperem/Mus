@@ -33,7 +33,7 @@ public class Server implements Serializable {
 
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
     }
 

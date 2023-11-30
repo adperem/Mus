@@ -165,6 +165,8 @@ public class AtenderPeticion extends Thread {
             } else if (accion.equals("UPDATE")) {
                 Jugador jugador = (Jugador) in.readObject();
                 update(jugador);
+            } else if (accion.equals("BUY")) {
+                Jugador jugador = (Jugador) in.readObject();
             }
 
 
@@ -198,6 +200,10 @@ public class AtenderPeticion extends Thread {
                     cartera.setTextContent(String.valueOf(jugador.getCartera()));
                 }
             }
+
+
+
+
 
             transformer.transform(source, result);
 
