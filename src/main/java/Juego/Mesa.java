@@ -6,7 +6,7 @@ import java.util.ArrayList;
 public class Mesa implements Serializable {
 
     //private ArrayList<Jugador> jugadores = new ArrayList<>(4);
-    private double codMesa;
+    private int codMesa;
     private Baraja baraja;
     private int numJugadorApuestaMasAlta;
     private boolean mus = true;
@@ -20,7 +20,7 @@ public class Mesa implements Serializable {
     private boolean juego;
 
 
-    public Mesa(double codMesa) {
+    public Mesa(int codMesa) {
         //Creamos una mesa desde 0
         this.baraja = new Baraja();
         this.baraja.barajear();
@@ -75,7 +75,12 @@ public class Mesa implements Serializable {
 
 
     public Carta sacarCarta() {
-        return this.baraja.sacarCarta();
+        Carta carta = this.baraja.sacarCarta();
+        if (carta == null) {
+            this.baraja = new Baraja();
+            return this.baraja.sacarCarta();
+        }
+        return carta;
     }
 
 

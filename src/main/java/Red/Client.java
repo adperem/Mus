@@ -51,7 +51,7 @@ public class Client {
             System.out.println("2 - Crear una mesa");
             System.out.println("3 - Unirse a una mesa");
             seleccion = Integer.parseInt(sc.nextLine());
-            while (seleccion != 1 && seleccion != 2) {
+            while (seleccion != 1 && seleccion != 2 && seleccion != 3) {
                 System.out.println("Selecccione una opcion:");
                 System.out.println("1 - Empezar a jugar");
                 System.out.println("2 - Crear una mesa");
@@ -63,7 +63,7 @@ public class Client {
                 case 1:
 
                     //Solicitar mesa y siguiente jugador
-                    Socket socket = new Socket("25.67.69.141", 3333);
+                    Socket socket = new Socket("localhost", 3333);
 
 
                     ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
@@ -85,7 +85,7 @@ public class Client {
                         out.writeObject("NEW");
 
                         in = new ObjectInputStream(socket.getInputStream());
-                        double codMesa = in.readDouble();
+                        int codMesa = (int) in.readObject();
                         System.out.println("Codigo de la mesa " + codMesa);
                         numJugador = in.readInt();
                         System.out.println("Has creado la mesa " + codMesa);
@@ -100,15 +100,15 @@ public class Client {
                     try {
                         socket = new Socket("localhost", 3333);
 
+
                         out = new ObjectOutputStream(socket.getOutputStream());
                         out.writeObject("JOIN");
 
+                        in = new ObjectInputStream(socket.getInputStream());
+
                         System.out.println("Inserte el codigo de la mesa");
 
-                        out.writeObject(Double.parseDouble(sc.nextLine()));
-
-
-                        in = new ObjectInputStream(socket.getInputStream());
+                        out.writeObject(Integer.parseInt(sc.nextLine()));
 
                         numJugador = (int) in.readObject();
                         if (numJugador == 0) {
@@ -133,7 +133,7 @@ public class Client {
     private void play(ObjectInputStream in, int numJugador) {
 
         try {
-
+            System.out.println("Esperando a que empiece la partida");
             Scanner sc = new Scanner(System.in);
             int seleccion;
             ArrayList<Carta> mano = new ArrayList<>(4);
@@ -386,13 +386,15 @@ public class Client {
             out.writeObject("LOGIN");
             out.writeObject(jugador);
             ObjectInputStream in = new ObjectInputStream(s.getInputStream());
-            boolean log = in.readBoolean();
-            if (log) System.out.println("Sesion iniciada correctamente");
-            else{
+
+
+            if (in.readBoolean()){
+                System.out.println("Sesion iniciada correctamente");
+                jugador = (Jugador) in.readObject();
+            } else{
                 System.out.println("Ha ocurrido un problema, vuelve a intentarlo mas tarde");
                 return false;
             }
-            jugador = (Jugador) in.readObject();
 
             System.out.println("Creditos disponibles: "+jugador.getCartera());
             return true;
@@ -424,7 +426,7 @@ public class Client {
 
 
 
-    public static void mostrarCartas(ArrayList<Carta> cartas) {
+    private static void mostrarCartas(ArrayList<Carta> cartas) {
         System.out.println("-------------------");
         System.out.println("Tus cartas");
         int i = 1;
@@ -438,7 +440,7 @@ public class Client {
     }
 
 
-    public static void mus(ArrayList<Carta> mano,ObjectInputStream in, ObjectOutputStream out, int numJugador) {
+    private static void mus(ArrayList<Carta> mano,ObjectInputStream in, ObjectOutputStream out, int numJugador) {
 
         try {
             Scanner sc = new Scanner(System.in);
@@ -504,7 +506,7 @@ public class Client {
     }
 
 
-    public static void grandes(ArrayList<Carta> mano, ObjectInputStream in, ObjectOutputStream out, int numJugador) {
+    private static void grandes(ArrayList<Carta> mano, ObjectInputStream in, ObjectOutputStream out, int numJugador) {
         
         try{
             Mesa mesa = (Mesa) in.readObject();
@@ -595,7 +597,7 @@ public class Client {
 
     }
 
-    public static void chicas(ArrayList<Carta> mano, ObjectInputStream in,ObjectOutputStream out, int numJugador) {
+    private static void chicas(ArrayList<Carta> mano, ObjectInputStream in,ObjectOutputStream out, int numJugador) {
 
         try{
             Mesa mesa =  (Mesa) in.readObject();
@@ -676,7 +678,7 @@ public class Client {
 
     }
 
-    public static void pares(ArrayList<Carta> mano,ObjectInputStream in ,ObjectOutputStream out, int numJugador) {
+    private static void pares(ArrayList<Carta> mano,ObjectInputStream in ,ObjectOutputStream out, int numJugador) {
 
         try{
             Mesa mesa =  (Mesa) in.readObject();
@@ -744,7 +746,7 @@ public class Client {
                 out.writeObject(mesa);
                 pares(mano, in,out, numJugador);
             } else {
-                if(!hayPares(mano)) System.out.println("No puedes apostar, no tinenes pares");
+                if(!hayPares(mano)) System.out.println("No puedes apostar, no tienes pares");
                 if (mesa.getNumJugadorApuestaMasAlta() == numJugador && mesa.getApuestaMasAlta(3) > 0) {
                     //nadie ha igualado
                     mesa.addPuntos(1, numJugador);
@@ -762,7 +764,7 @@ public class Client {
 
     }
 
-    public static void juego(ArrayList<Carta> mano, ObjectInputStream in, ObjectOutputStream out, int numJugador) {
+    private static void juego(ArrayList<Carta> mano, ObjectInputStream in, ObjectOutputStream out, int numJugador) {
 
         try{
             Mesa mesa =  (Mesa) in.readObject();
@@ -831,7 +833,7 @@ public class Client {
                 out.writeObject(mesa);
                 juego(mano, in,out, numJugador);
             } else {
-                if(!hayJuego(mano))System.out.println("No puedes apostar, no tinenes juego");
+                if(!hayJuego(mano))System.out.println("No puedes apostar, no tienes juego");
 
                 if (mesa.getNumJugadorApuestaMasAlta() == numJugador && mesa.getApuestaMasAlta(4) > 0) {
                     //nadie ha igualado
@@ -850,7 +852,7 @@ public class Client {
 
     }
 
-    public static void puntos(ArrayList<Carta> mano,ObjectInputStream in, ObjectOutputStream out, int numJugador) {
+    private static void puntos(ArrayList<Carta> mano,ObjectInputStream in, ObjectOutputStream out, int numJugador) {
         try{
             Mesa mesa =  (Mesa) in.readObject();
             if (mesa.getNumJugadorApuestaMasAlta() != numJugador && mesa.getNumRonda() == 5 && mesa.getPasadas() != 4 && !mesa.hayJuego()) {
@@ -930,7 +932,7 @@ public class Client {
 
     }
 
-    public static void asignarPuntos(ArrayList<Carta> mano, ObjectInputStream in, ObjectOutputStream out, int numJugador,Jugador jugador) {
+    private static void asignarPuntos(ArrayList<Carta> mano, ObjectInputStream in, ObjectOutputStream out, int numJugador,Jugador jugador) {
 
         try {
             Mesa mesa =  (Mesa) in.readObject();
@@ -1125,7 +1127,7 @@ public class Client {
         return suma;
     }
 
-    public static int ganadorJuego(ArrayList<Carta> mano1, ArrayList<Carta> mano2, ArrayList<Carta> mano3, ArrayList<Carta> mano4) {
+    private static int ganadorJuego(ArrayList<Carta> mano1, ArrayList<Carta> mano2, ArrayList<Carta> mano3, ArrayList<Carta> mano4) {
 
 
         Map<Integer, Integer> puntajes = new HashMap<>();
@@ -1162,7 +1164,7 @@ public class Client {
         return -1;
     }
 
-    public static int puntuajePares(ArrayList<Carta> mano) {
+    private static int puntuajePares(ArrayList<Carta> mano) {
         /**
          * Si tiene pares dev 1, trio dev 2, duplex dev 3
          */
@@ -1184,7 +1186,7 @@ public class Client {
         return puntuacion;
     }
 
-    public static int ganadorPuntos(ArrayList<Carta> mano1, ArrayList<Carta> mano2, ArrayList<Carta> mano3, ArrayList<Carta> mano4){
+    private static int ganadorPuntos(ArrayList<Carta> mano1, ArrayList<Carta> mano2, ArrayList<Carta> mano3, ArrayList<Carta> mano4){
 
         int p1 = puntosJuego(mano1);
         int p2 = puntosJuego(mano2);
@@ -1209,10 +1211,6 @@ public class Client {
 
         if(puntosJuego(bestP1)>puntosJuego(bestP2)) return 1;
         return 2;
-
-
-
-
 
 
     }

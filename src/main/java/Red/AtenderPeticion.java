@@ -36,8 +36,6 @@ public class AtenderPeticion extends Thread {
 
     public void run() {
         try  {
-
-
             ObjectInputStream in = new ObjectInputStream(this.socket.getInputStream());
             ObjectOutputStream out = new ObjectOutputStream(this.socket.getOutputStream());
 
@@ -48,13 +46,14 @@ public class AtenderPeticion extends Thread {
             if (accion.equals("NEW")) {
                 //Creamos una mesa
 
-                double codMesa = 0;
+                int codMesa = 1;
                 for (Mesa mesa : mesasPrivadas) {
                     if (mesa.getCodMesa() == codMesa) codMesa++;
                 }
 
 
                 Mesa mesa = new Mesa(codMesa);
+                out.writeObject(codMesa);
                 mesa.addIp(this.socket.getInetAddress().getHostAddress());
                 mesasPrivadas.add(mesa);
 
@@ -62,13 +61,12 @@ public class AtenderPeticion extends Thread {
                     Thread.sleep(1000);
                     System.out.println("Jugadores unidos: " + mesa.getNumPlayers());
                 }
-                out.writeDouble(codMesa);
                 out.writeInt(1); // Enviamos el numJugador
                 out.writeObject(mesa);
 
             } else if (accion.equals("JOIN")) {
                 //nos unimos a una mesa
-                double codMesa = in.readDouble();
+                int codMesa = (int) in.readObject();
                 Mesa mesa = null;
                 while (mesa == null) {
                     for (Mesa mesa1 : mesasPrivadas) {
@@ -126,7 +124,8 @@ public class AtenderPeticion extends Thread {
                         }
 
                         out.writeObject(numJugador); // Enviamos el numJugador
-                        out.writeObject(mesa); // Enviamos la mesa
+                        if(numJugador == 1) out.writeObject(mesa); // Enviamos la mesa
+
 
                     } else {
                         Mesa mesa = new Mesa(1);
@@ -149,7 +148,9 @@ public class AtenderPeticion extends Thread {
 
                 Jugador jugador = (Jugador) in.readObject();
 
-                if (!exist(jugador.getName())) out.writeBoolean(false);
+                if (!exist(jugador.getName())){
+                    out.writeObject(false);
+                }
                 else {
                     out.writeBoolean(logIn(jugador));
                     out.writeObject(jugador);
@@ -168,6 +169,7 @@ public class AtenderPeticion extends Thread {
             } else if (accion.equals("BUY")) {
                 Jugador jugador = (Jugador) in.readObject();
             }
+            socket.close();
 
 
         } catch (IOException | InterruptedException | ClassNotFoundException e) {
@@ -208,7 +210,7 @@ public class AtenderPeticion extends Thread {
             transformer.transform(source, result);
 
         } catch (ParserConfigurationException | IOException | SAXException | TransformerException e) {
-            e.printStackTrace();
+            System.err.println("Error en el update");
         }
 
     }
@@ -250,7 +252,7 @@ public class AtenderPeticion extends Thread {
 
 
         } catch (ParserConfigurationException | IOException | SAXException | TransformerException e) {
-            e.printStackTrace();
+            System.err.println("Error en el sing up");
         }
         return false;
 
@@ -274,7 +276,7 @@ public class AtenderPeticion extends Thread {
                 }
             }
         } catch (IOException | SAXException | ParserConfigurationException e) {
-
+            System.err.println("Error en el exist");
         }
         return false;
     }
@@ -304,168 +306,10 @@ public class AtenderPeticion extends Thread {
                 }
             }
         } catch (IOException | SAXException | ParserConfigurationException e) {
-
+            System.err.println("Error en el login");
         }
 
         return false;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /*
-
-    public void run(){
-        try{
-            //ObjectInputStream in = new ObjectInputStream(this.socket.getInputStream());
-            System.out.println("Entramos run");
-            //BufferedReader bf = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
-            //String peticion = bf.readLine();
-            ObjectInputStream in = new ObjectInputStream(this.socket.getInputStream());
-            ObjectOutputStream out = new ObjectOutputStream(this.socket.getOutputStream());
-            String peticion = (String) in.readObject();
-            System.out.println("Hemos leido la peticion: " +peticion);
-
-
-
-            if(peticion.startsWith("GET ")){
-                //Intento de unirse a mesa
-                double codMesa = in.readDouble();
-                System.out.println("hemos leido el codMesa: "+codMesa);
-                Jugador jugador = (Jugador) in.readObject();
-                if (existMesa(codMesa,this.mesa)){ //Comprobamos q la mesa existe
-                    for (Mesa mesa : this.mesa){
-                        if(mesa.getCodMesa()==codMesa){ //intentamos unirnos
-                            if(mesa.couldJoin(jugador)) {
-                                mesa.joinTable(jugador);
-                                numJugador=mesa.getNumPlayers();
-                                //System.out.println("Soy el jugador: "+numJugador);
-                                out.writeObject("CORRECT");//Indicamos que el jugador se a unido correctamente
-                                while(mesa.getNumPlayers()!=4){
-                                    Thread.sleep( 1000);
-                                    //System.out.println("jugadores en la mesa: "+mesa.getNumPlayers());
-                                }
-                                out.writeObject("START");
-                                System.out.println("Empezamos la partida");
-
-                                //Enviar cartas
-                                //System.out.println("Turno antes de enviar cartas: "+mesa.getTurno()+" desde jugador "+numJugador);
-                                esperarTurno(mesa);
-                                for (int i=0;i<4; i++){
-                                    //System.out.println("Carta repartida al jugador "+numJugador);
-                                    esperarTurno(mesa);
-
-                                    out.writeObject(mesa.sacarCarta());
-                                    mesa.pasarTurno();
-                                    //System.out.println("Turno depues de enviar la primera: "+mesa.getTurno());
-                                }
-                                //Mus
-                                System.out.println("Turno:"+mesa.getTurno());
-                                esperarTurno(mesa);
-                                System.out.println("despues de la espera jugador "+numJugador);
-                                String minetras =(String) in.readObject();
-                                System.out.println("Sobre mus el jugador "+numJugador+" ha recibido"+minetras);
-                                if (in.readBoolean()){
-                                    System.out.println("se ha recibido mus del jugador "+numJugador);
-                                    mesa.setMus(true);
-                                    mesa.pasarTurno();
-                                }else {
-                                    mesa.setMus(false);
-                                    mesa.setTurno(0);
-                                }
-                                esperarTurno(mesa);
-                                if(mesa.isMus()){
-                                    out.writeObject("Mus aprobado");
-                                }
-                                else out.writeObject("Mus denegado");
-
-
-
-
-                            }
-                        }
-                    }
-                }
-
-
-
-            } else if (peticion.startsWith("POST ")) {
-                //Peticion para crear mesa
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    private void startGame(){
-
-    }
-
-    private void esperarTurno(Mesa mesa){
-        while(this.numJugador!= mesa.getTurno()+1){
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-
-
-
-
-    public static boolean existMesa(double codMesa,LinkedList<Mesa> mesas){
-        for (Mesa mesa : mesas){
-            if(mesa.getCodMesa()==codMesa) return true;
-        }
-        return false;
-    }
-*/
 
 }

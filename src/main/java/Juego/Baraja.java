@@ -6,7 +6,7 @@ import java.util.Collections;
 
 public class Baraja implements Serializable {
 
-    private ArrayList<Carta> baraja= new ArrayList<Carta>();
+    private ArrayList<Carta> baraja= new ArrayList<>();
 
     public Baraja(){
         for (int i=0; i<4; i++){
@@ -26,7 +26,6 @@ public class Baraja implements Serializable {
             return c;
         }
         return null;
-
     }
 
     public void barajear(){
