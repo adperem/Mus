@@ -63,7 +63,7 @@ public class Client {
                 case 1:
 
                     //Solicitar mesa y siguiente jugador
-                    Socket socket = new Socket("localhost", 3333);
+                    Socket socket = new Socket("25.67.69.141", 3333);
 
 
                     ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
@@ -193,7 +193,7 @@ public class Client {
                     String[] deleteCartas = eliminar.split(",");
                     ArrayList<Carta> delete = new ArrayList<>();
                     for (int i = 0; i < deleteCartas.length; i++)
-                        delete.add(mano.get(Integer.parseInt(deleteCartas[i])));
+                        delete.add(mano.get(Integer.parseInt(deleteCartas[i])-1));
                     for (int i = 0; i < deleteCartas.length; i++) {
                         mano.remove(delete.get(i));
                     }
@@ -281,7 +281,7 @@ public class Client {
                     String[] deleteCartas = eliminar.split(",");
                     ArrayList<Carta> delete = new ArrayList<>();
                     for (int i = 0; i < deleteCartas.length; i++)
-                        delete.add(mano.get(Integer.parseInt(deleteCartas[i])));
+                        delete.add(mano.get(Integer.parseInt(deleteCartas[i])-1));
                     for (int i = 0; i < deleteCartas.length; i++) {
                         mano.remove(delete.get(i));
                     }
@@ -484,7 +484,7 @@ public class Client {
                 String eliminar = sc.nextLine();
                 String[] deleteCartas = eliminar.split(",");
                 ArrayList<Carta> delete = new ArrayList<>();
-                for (int i = 0; i < deleteCartas.length; i++) delete.add(mano.get(Integer.parseInt(deleteCartas[i])));
+                for (int i = 0; i < deleteCartas.length; i++) delete.add(mano.get(Integer.parseInt(deleteCartas[i])-1));
                 for (int i = 0; i < deleteCartas.length; i++) {
                     mano.remove(delete.get(i));
                 }
