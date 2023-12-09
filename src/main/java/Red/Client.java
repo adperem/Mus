@@ -49,7 +49,7 @@ public class Client {
 
                 case 2: //Jugador existente
 
-                    Jugador j;
+
                     while ((this.jugador = logIn()) == null) {
                         System.out.println("Usuario o contraseña incorrecta");
                     }
@@ -166,7 +166,7 @@ public class Client {
                 System.out.println("Te has unido a la mesa");
 
                 mano.add(mesa.sacarCarta());
-                Thread.sleep(1000);
+                Thread.sleep(500);
                 Socket sEnviar = new Socket(ip, 1234 + numJugador + 1);
 
                 ObjectOutputStream out = new ObjectOutputStream(sEnviar.getOutputStream());
@@ -324,10 +324,6 @@ public class Client {
                     puntos(mano, in, out, numJugador);
                     asignarPuntos(mano, in, out, numJugador, this.jugador);
 
-                    //mesa = (Mesa) in.readObject();
-                    //out.writeObject(mesa);
-
-
                     mano = new ArrayList<>(4);
                     mus(mano, in, out, numJugador);
                 }
@@ -362,7 +358,7 @@ public class Client {
         System.out.print("Pocesando compra");
         try {
             for (int i = 0; i < 3; i++) {
-                Thread.sleep(100);
+                Thread.sleep(500);
                 System.out.print(".");
             }
 
@@ -371,7 +367,6 @@ public class Client {
         }
         System.out.println("\nPago procesa con exito");
         Jugador j = new Jugador(nombre, cartera, passwd);
-        jugador = j;
         try {
             Socket s = new Socket("localhost", 3333);
 
@@ -443,12 +438,9 @@ public class Client {
         try {
             Socket s = new Socket("localhost", 3333);
 
-
             ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
             out.writeObject("UPDATE");
             out.writeObject(jugador);
-            //ObjectInputStream in = new ObjectInputStream(s.getInputStream());
-            //if(in.readBoolean()) System.out.println("conectado");
 
         } catch (IOException e) {
             e.printStackTrace();

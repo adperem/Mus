@@ -194,7 +194,7 @@ public class AtenderPeticion extends Thread {
     }
 
     /**
-     * Dado un jugador actualiza su cartera
+     * Dado un jugador actualiza su cartera.
      *
      * @param jugador Jugador que quiere ser actualizado
      */
@@ -326,7 +326,7 @@ public class AtenderPeticion extends Thread {
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             DocumentBuilder db = dbf.newDocumentBuilder();
-            Document d = db.parse(new File("src//main//resources//Jugadores.xml"));
+            Document d = db.parse(new File("src\\main\\resources\\Jugadores.xml"));
 
             NodeList list = d.getElementsByTagName("jugador");
 
