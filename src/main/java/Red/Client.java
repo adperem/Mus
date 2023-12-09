@@ -11,9 +11,17 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.*;
 
+/**
+ * Representa un Jugador que quiere jugar
+ * @author Adrián Pérez Moreno
+ */
+
 public class Client {
 
-    private Jugador jugador = new Jugador();
+    /**
+     * Jugador que desea jugar
+     */
+    private Jugador jugador = null;
 
     public static void main(String[] args) {
         Client client = new Client();
@@ -21,7 +29,11 @@ public class Client {
 
     }
 
+    /**
+     * Inicia el proceso de jugar
+     */
     private void jugar() {
+
         try (Scanner sc = new Scanner(System.in)) {
             System.out.println("1 - Nuevo jugador.\n2 - Jugador existente.");
             int seleccion = Integer.parseInt(sc.nextLine());
@@ -32,13 +44,13 @@ public class Client {
 
             switch (seleccion) {
                 case 1: //Nuevo jugador
-                    newPlayer(sc, this.jugador);
+                    newPlayer(this.jugador);
                     break;
 
                 case 2: //Jugador existente
 
                     Jugador j;
-                    while ((this.jugador = logIn(sc)) == null) {
+                    while ((this.jugador = logIn()) == null) {
                         System.out.println("Usuario o contraseña incorrecta");
                     }
 
@@ -131,6 +143,12 @@ public class Client {
         }
     }
 
+
+    /**
+     * Se conecta a una partida
+     * @param in {@code ObjectInputStream} por donde recibe la mesa
+     * @param numJugador Número del jugador en la mesa
+     */
 
     private void play(ObjectInputStream in, int numJugador) {
 
@@ -324,9 +342,13 @@ public class Client {
 
     }
 
-
-    private static void newPlayer(Scanner sc, Jugador jugador) {
+    /**
+     * Se conecta con el servidor para crear un nuevo jugador
+     * @param jugador Nuevo Jugador
+     */
+    private static void newPlayer( Jugador jugador) {
         //creamos el nuevo jugador
+        Scanner sc = new Scanner(System.in);
         System.out.println("Introduce el nombre del jugador");
         String nombre = sc.nextLine();
 
@@ -366,8 +388,13 @@ public class Client {
 
     }
 
-    private static Jugador logIn(Scanner sc) {
+    /**
+     * Inicia sesion con el servidor
+     * @return El Jugador o {@code null} si ha ocurrido un problema
+     */
+    private static Jugador logIn() {
         //creamos el nuevo jugador
+        Scanner sc = new Scanner(System.in);
         System.out.println("Introduce el nombre del jugador");
         String nombre = sc.nextLine();
 
@@ -407,6 +434,10 @@ public class Client {
         return null;
     }
 
+    /**
+     * Actualiza la cartera del Jugador
+     * @param jugador Jugador a actualizar
+     */
     private static void update(Jugador jugador) {
 
         try {
@@ -424,12 +455,15 @@ public class Client {
         }
     }
 
-
-    private static void mostrarCartas(ArrayList<Carta> cartas) {
+    /**
+     * Muestra por la salida estandar la mano del jugador
+     * @param mano {@code ArrayList} que representa la mano del jugador
+     */
+    private static void mostrarCartas(ArrayList<Carta> mano) {
         System.out.println("-------------------");
         System.out.println("Tus cartas");
         int i = 1;
-        for (Carta carta : cartas) {
+        for (Carta carta : mano) {
             System.out.print(i + ") ");
             carta.mostrarCarta();
             i++;
@@ -439,6 +473,13 @@ public class Client {
     }
 
 
+    /**
+     * Simula la ronda de mus
+     * @param mano {@code ArrayList} representa la mano del jugador
+     * @param in {@code ObjectInputStream} por donde recibe la mesa del jugador anterior
+     * @param out {@code ObjectOutputStream} por donde envia la mesa al siguiente juegador
+     * @param numJugador Numero del jugador
+     */
     private static void mus(ArrayList<Carta> mano, ObjectInputStream in, ObjectOutputStream out, int numJugador) {
 
         try {
@@ -507,7 +548,13 @@ public class Client {
 
     }
 
-
+    /**
+     * Simula la ronda de grandes
+     * @param mano {@code ArrayList} representa la mano del jugador
+     * @param in {@code ObjectInputStream} por donde recibe la mesa del jugador anterior
+     * @param out {@code ObjectOutputStream} por donde envia la mesa al siguiente juegador
+     * @param numJugador Numero del jugador
+     */
     private static void grandes(ArrayList<Carta> mano, ObjectInputStream in, ObjectOutputStream out, int numJugador) {
 
         try {
@@ -603,6 +650,13 @@ public class Client {
 
     }
 
+    /**
+     * Simula la ronda de chicas
+     * @param mano {@code ArrayList} representa la mano del jugador
+     * @param in {@code ObjectInputStream} por donde recibe la mesa del jugador anterior
+     * @param out {@code ObjectOutputStream} por donde envia la mesa al siguiente juegador
+     * @param numJugador Numero del jugador
+     */
     private static void chicas(ArrayList<Carta> mano, ObjectInputStream in, ObjectOutputStream out, int numJugador) {
 
         try {
@@ -688,6 +742,13 @@ public class Client {
 
     }
 
+    /**
+     * Simula la ronda de pares
+     * @param mano {@code ArrayList} representa la mano del jugador
+     * @param in {@code ObjectInputStream} por donde recibe la mesa del jugador anterior
+     * @param out {@code ObjectOutputStream} por donde envia la mesa al siguiente juegador
+     * @param numJugador Numero del jugador
+     */
     private static void pares(ArrayList<Carta> mano, ObjectInputStream in, ObjectOutputStream out, int numJugador) {
 
         try {
@@ -779,6 +840,13 @@ public class Client {
 
     }
 
+    /**
+     * Simula la ronda de juego
+     * @param mano {@code ArrayList} representa la mano del jugador
+     * @param in {@code ObjectInputStream} por donde recibe la mesa del jugador anterior
+     * @param out {@code ObjectOutputStream} por donde envia la mesa al siguiente juegador
+     * @param numJugador Numero del jugador
+     */
     private static void juego(ArrayList<Carta> mano, ObjectInputStream in, ObjectOutputStream out, int numJugador) {
 
         try {
@@ -871,6 +939,13 @@ public class Client {
 
     }
 
+    /**
+     * Simula la ronda de puntos
+     * @param mano {@code ArrayList} representa la mano del jugador
+     * @param in {@code ObjectInputStream} por donde recibe la mesa del jugador anterior
+     * @param out {@code ObjectOutputStream} por donde envia la mesa al siguiente juegador
+     * @param numJugador Numero del jugador
+     */
     private static void puntos(ArrayList<Carta> mano, ObjectInputStream in, ObjectOutputStream out, int numJugador) {
         try {
             Mesa mesa = (Mesa) in.readObject();
@@ -955,6 +1030,14 @@ public class Client {
 
     }
 
+    /**
+     * Reparte los puntos apostados a los equipos
+     * @param mano {@code ArrayList} representa la mano del jugador
+     * @param in {@code ObjectInputStream} por donde recibe la mesa del jugador anterior
+     * @param out {@code ObjectOutputStream} por donde envia la mesa al siguiente juegador
+     * @param numJugador Numero del jugador
+     * @param jugador Jugador que va a recibir los puntos
+     */
     private static void asignarPuntos(ArrayList<Carta> mano, ObjectInputStream in, ObjectOutputStream out, int numJugador, Jugador jugador) {
 
         try {
@@ -1038,7 +1121,6 @@ public class Client {
                             }
                         }
                     }
-                    //mesa.showPuntuaciones();
                     if (!mesa.finalizado()) mesa.reiniciarPartida();
                     out.writeObject(mesa);
                     asignarPuntos(mano, in, out, numJugador, jugador);
@@ -1051,18 +1133,11 @@ public class Client {
                     out.writeObject(mesa);
                     asignarPuntos(mano, in, out, numJugador, jugador);
                 }
-/*
-                if (numJugador != 1) {
-                    out.writeObject(mesa);
-                    asignarPuntos(mano, in, out, numJugador, jugador);
-                }*/
 
-            }else {
+            } else {
 
-                //if (numJugador == 4 && !mesa.finalizado()) out.writeObject(mesa);
-                //if (numJugador != 4 ) out.writeObject(mesa);
-                if(numJugador == 1 && !mesa.finalizado()) out.writeObject(mesa);
-                if(numJugador != 1 ) out.writeObject(mesa);
+                if (numJugador == 1 && !mesa.finalizado()) out.writeObject(mesa);
+                if (numJugador != 1) out.writeObject(mesa);
 
                 if (mesa.finalizado()) {
 
@@ -1092,7 +1167,6 @@ public class Client {
             }
 
 
-
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -1101,6 +1175,11 @@ public class Client {
     }
 
 
+    /**
+     * Realiza una apuesta en la ronda acutal
+     * @param mesa Mesa en la que se esta jugando
+     * @param numJugador Número del jugador que esta apostando
+     */
     private static void realizarApuesta(Mesa mesa, int numJugador) {
         Scanner sc = new Scanner(System.in);
         System.out.println("1 - Envidar\n2 - Pasar\n3 - Apostar\n4 - Igualar");
@@ -1143,6 +1222,11 @@ public class Client {
         }
     }
 
+    /**
+     * Comprueba si la mano tiene pares
+     * @param mano Mano a comprobar
+     * @return true si tiene pares, falso en caso contrario
+     */
     private static boolean hayPares(ArrayList<Carta> mano) {
         for (Carta carta1 : mano) {
             for (Carta carta2 : mano) {
@@ -1154,6 +1238,11 @@ public class Client {
         return false;
     }
 
+    /**
+     * Comprueba si la mano tiene juego
+     * @param mano Mano a comprobar
+     * @return true si tiene juego, falso en caso contrario
+     */
     private static boolean hayJuego(ArrayList<Carta> mano) {
         int suma = 0;
         for (Carta carta : mano) {
@@ -1163,6 +1252,11 @@ public class Client {
         return suma >= 31;
     }
 
+    /**
+     * Devuleve el numero de putos que tiene la mano
+     * @param mano Mano del jugador
+     * @return Número de puntos
+     */
     private static int puntosJuego(ArrayList<Carta> mano) {
         int suma = 0;
         for (Carta carta : mano) {
@@ -1172,6 +1266,14 @@ public class Client {
         return suma;
     }
 
+    /**
+     * Devuelve el número del jugador que gane la ronda de juego
+     * @param mano1 Mano del jugador 1
+     * @param mano2 Mano del jugador 2
+     * @param mano3 Mano del jugador 3
+     * @param mano4 Mano del jugador 4
+     * @return El jugador que ha gando o -1 si ningún jugador tiene juego
+     */
     private static int ganadorJuego(ArrayList<Carta> mano1, ArrayList<Carta> mano2, ArrayList<Carta> mano3, ArrayList<Carta> mano4) {
 
 
@@ -1204,15 +1306,16 @@ public class Client {
                 return 4;
             }
         }
-
-        // Si ninguno de los jugadores tiene una puntuación en la lista, devuelve -1 o maneja la situación según sea necesario.
         return -1;
     }
 
+    /**
+     * Calcula la puntuación en pares
+     * @param mano Mano del jugador
+     * @return <li>1 si tienes pares</li><li>2 si tienes trio</li><li>3 si tienes duplex</li>
+     */
     private static int puntuajePares(ArrayList<Carta> mano) {
-        /**
-         * Si tiene pares dev 1, trio dev 2, duplex dev 3
-         */
+
         ArrayList<Carta> copia = new ArrayList<>(4);
         int puntuacion = 0;
         for (Carta carta : mano) {
@@ -1231,6 +1334,14 @@ public class Client {
         return puntuacion;
     }
 
+    /**
+     * Devuelve el número del jugador que gane la ronda de puntos
+     * @param mano1 Mano del jugador 1
+     * @param mano2 Mano del jugador 2
+     * @param mano3 Mano del jugador 3
+     * @param mano4 Mano del jugador 4
+     * @return <li>1 si gana el equipo 1</li><li>2 si gana el equipo 2</li>
+     */
     private static int ganadorPuntos(ArrayList<Carta> mano1, ArrayList<Carta> mano2, ArrayList<Carta> mano3, ArrayList<Carta> mano4) {
 
         int p1 = puntosJuego(mano1);
@@ -1240,7 +1351,6 @@ public class Client {
 
         ArrayList<Carta> bestP1 = null;
         ArrayList<Carta> bestP2 = null;
-
 
         if (p1 >= p3) {
             bestP1 = mano1;
@@ -1256,11 +1366,7 @@ public class Client {
 
         if (puntosJuego(bestP1) > puntosJuego(bestP2)) return 1;
         return 2;
-
-
     }
-
-
 }
 
 

@@ -1,65 +1,73 @@
 package Juego;
 
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.Scanner;
+
+/**
+ * Representa a un jugador en el mundo real
+ *
+ * @author Adrián Pérez Moreno
+ */
+
 
 public class Jugador implements Serializable {
+    /**
+     * Nombre del jugador
+     */
     private String name;
+    /**
+     * Creditos del jugador
+     */
     private double cartera;
+    /**
+     * Contraseña del jugador
+     */
     private String passwd;
 
-    public Jugador() {
-
-    }
-
+    /**
+     * Inicializa un Jugador
+     *
+     * @param name    Nombre del jugador
+     * @param cartera Creditos del jugador
+     * @param passwd  Contraseña del jugador
+     */
     public Jugador(String name, double cartera, String passwd) {
         this.name = name;
         this.cartera = cartera;
         this.passwd = passwd;
     }
 
-    private void setName(String name1) {
-        this.name = name1;
-    }
-
+    /**
+     * Devuelve el nombre del jugadro
+     *
+     * @return El nombre de jugadro
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * Acutualiza los creditos del jugador
+     *
+     * @param cartera Nueva cantidad de creditos
+     */
     public void setCartera(double cartera) {
         this.cartera = cartera;
     }
 
+    /**
+     * Devuelve el numero de creditos del jugador
+     *
+     * @return Creditos disponibles
+     */
     public double getCartera() {
         return cartera;
     }
 
-
-
-
-
-
-
-
-
+    /**
+     * Devuelve la contraseña del jugador
+     *
+     * @return Contraseña del jugadro
+     */
     public String getPasswd() {
         return passwd;
     }

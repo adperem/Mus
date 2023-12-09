@@ -20,11 +20,24 @@ import java.io.*;
 import java.net.Socket;
 import java.util.*;
 
+/**
+ * Atiende al cliente que se conecta al servidor
+ * @author Adrián Pérez Moreno
+ */
+
 public class AtenderPeticion extends Thread {
 
+    /**
+     * Socket con el cual se comunica con el cliente
+     */
     private Socket socket;
-    private int numJugador;
+    /**
+     * Lista de partidas publicas
+     */
     private LinkedList<Mesa> mesasPublicas;
+    /**
+     * Lista de partidas privadas
+     */
     private LinkedList<Mesa> mesasPrivadas;
 
     public AtenderPeticion(Socket socket, LinkedList<Mesa> mesasPublicas, LinkedList<Mesa> mesasPrivadas) {
@@ -34,14 +47,14 @@ public class AtenderPeticion extends Thread {
     }
 
     public void run() {
-        try  {
+        try {
             ObjectInputStream in = new ObjectInputStream(this.socket.getInputStream());
             ObjectOutputStream out = new ObjectOutputStream(this.socket.getOutputStream());
 
             String accion = (String) in.readObject();
             System.out.println(accion);
 
-            //Se quiere crear una nueva mesa
+
             if (accion.equals("NEW")) {
                 //Creamos una mesa
 
@@ -64,7 +77,7 @@ public class AtenderPeticion extends Thread {
                 out.writeObject(mesa);
 
             } else if (accion.equals("JOIN")) {
-                //nos unimos a una mesa
+                //Nos unimos a una mesa determinada
                 int codMesa = (int) in.readObject();
                 Mesa mesa = null;
                 while (mesa == null) {
@@ -80,6 +93,7 @@ public class AtenderPeticion extends Thread {
 
 
             } else if (accion.equals("PLAY")) {
+                //Unirse a qualquier mesa
 
                 if (mesasPublicas.size() == 0) {
                     //Inicio del server sin mesas
@@ -101,7 +115,7 @@ public class AtenderPeticion extends Thread {
                     int i = 0;
                     int numJugador;
                     boolean aniadido = false;
-                    while (i<mesasPublicas.size() && !aniadido) {
+                    while (i < mesasPublicas.size() && !aniadido) {
 
                         if (mesasPublicas.get(i).getNumPlayers() < 4) {
 
@@ -117,13 +131,13 @@ public class AtenderPeticion extends Thread {
                         Mesa mesa = mesasPublicas.get(i);
                         numJugador = mesa.getNumPlayers();
 
+                        System.out.println("Jugadores unidos: " + mesa.getNumPlayers());
                         while (mesa.getNumPlayers() != 4) { //Esperamos a que el num de jugadores sea 4
                             Thread.sleep(1000);
-                            System.out.println("Jugadores unidos: " + mesa.getNumPlayers());
                         }
 
                         out.writeObject(numJugador); // Enviamos el numJugador
-                        if(numJugador == 1) out.writeObject(mesa); // Enviamos la mesa
+                        if (numJugador == 1) out.writeObject(mesa); // Enviamos la mesa
 
 
                     } else {
@@ -131,10 +145,9 @@ public class AtenderPeticion extends Thread {
                         mesa.addIp(this.socket.getInetAddress().getHostAddress());
                         mesasPublicas.add(mesa);
 
-
+                        System.out.println("Jugadores unidos: " + mesa.getNumPlayers());
                         while (mesa.getNumPlayers() != 4) { //Esperamos a que el num de jugadores sea 4
                             Thread.sleep(1000);
-                            System.out.println("Jugadores unidos: " + mesa.getNumPlayers());
                         }
 
                         out.writeObject(1); // Enviamos el numJugador
@@ -144,41 +157,47 @@ public class AtenderPeticion extends Thread {
                     }
                 }
             } else if (accion.equals("LOGIN")) {
+                //El usuario desea iniciar sesión en la aplicación
 
                 Jugador jugador = (Jugador) in.readObject();
 
-                if (!exist(jugador.getName())){
+                if (!exist(jugador.getName())) {
                     out.writeObject(false);
-                }
-                else {
+                } else {
                     out.writeBoolean(logIn(jugador));
                     out.writeObject(jugador);
                 }
 
 
             } else if (accion.equals("SINGUP")) {
+                //El usuario desea crear una cuenta
+
                 Jugador jugador = (Jugador) in.readObject();
 
                 if (exist(jugador.getName())) out.writeBoolean(false);
                 else out.writeBoolean(singUp(jugador));
 
             } else if (accion.equals("UPDATE")) {
+                //Actualiza la cartera de un jugador
                 Jugador jugador = (Jugador) in.readObject();
                 update(jugador);
-                //out.writeBoolean(true);
             }
             socket.close();
 
 
         } catch (InterruptedException | ClassNotFoundException | IOException e) {
-            //e.printStackTrace();
+
             System.err.println("Ha ocurrido un error");
         }
 
 
-
     }
 
+    /**
+     * Dado un jugador actualiza su cartera
+     *
+     * @param jugador Jugador que quiere ser actualizado
+     */
     public static synchronized void update(Jugador jugador) {
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -207,7 +226,6 @@ public class AtenderPeticion extends Thread {
                 }
 
 
-
             }
 
             transformer.transform(source, result);
@@ -218,7 +236,12 @@ public class AtenderPeticion extends Thread {
 
     }
 
-
+    /**
+     * Añade el jugador a la base de datos
+     *
+     * @param jugador jugador que quiere ser añadido a la base de datos
+     * @return true si el jugador a sido añadido con existo, false en caso contrario
+     */
     public static synchronized boolean singUp(Jugador jugador) {
 
         try {
@@ -261,6 +284,13 @@ public class AtenderPeticion extends Thread {
 
     }
 
+    /**
+     * Comprueba si existe el jugador en la base de datos
+     *
+     * @param name nombre del jugador a buscar
+     * @return true si el jugdor existe en la base de datos, falso en caso contrario.
+     */
+
     public static boolean exist(String name) {
         //Comprueba si el jugador existe en la base de datos
         try {
@@ -284,6 +314,12 @@ public class AtenderPeticion extends Thread {
         return false;
     }
 
+    /**
+     * Comprueba si el Jugador puede iniciar sesión
+     *
+     * @param jugador jugador que desea inciar sesión
+     * @return true si puede iniciar sesión, falso en caso contrario
+     */
     public static boolean logIn(Jugador jugador) {
 
 

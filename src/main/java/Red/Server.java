@@ -9,23 +9,37 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Representa un lobby de Mus
+ *
+ * @author Adrián Pérez Moreno
+ */
+
 public class Server implements Serializable {
+    /**
+     * Lista de partidas publicas
+     */
+    static LinkedList<Mesa> partidasPublicas;
+    /**
+     * Lista de partidas privadas
+     */
+    static LinkedList<Mesa> partidasPrivadas;
 
 
     public static void main(String[] args) {
 
-        LinkedList<Mesa> partidasPublicas = new LinkedList<>();
-        LinkedList<Mesa> partidasPrivadas = new LinkedList<>();
+        partidasPublicas = new LinkedList<>();
+        partidasPrivadas = new LinkedList<>();
 
 
-        try{
+        try {
             ServerSocket ss = new ServerSocket(3333);
             ExecutorService pool = Executors.newCachedThreadPool();
-            while (true){
+            while (true) {
                 try {
                     Socket s = ss.accept();
 
-                    pool.execute(new AtenderPeticion(s,partidasPublicas,partidasPrivadas));
+                    pool.execute(new AtenderPeticion(s, partidasPublicas, partidasPrivadas));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -36,7 +50,6 @@ public class Server implements Serializable {
             e.printStackTrace();
         }
     }
-
 
 
 }
