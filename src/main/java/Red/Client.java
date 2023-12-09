@@ -318,7 +318,7 @@ public class Client {
             }
 
         } catch (IOException | ClassNotFoundException | InterruptedException e) {
-            System.out.println("algun error");
+            System.err.println("Ha ocurrido un error");
         }
 
 
@@ -361,7 +361,7 @@ public class Client {
             else System.out.println("Ha ocurrido un problema, vuelve a intentarlo mas tarde");
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("Ha ocurrido un error");
+            System.err.println("Ha ocurrido un error");
         }
 
     }
