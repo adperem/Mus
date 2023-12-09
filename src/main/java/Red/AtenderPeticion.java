@@ -12,7 +12,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -96,13 +95,13 @@ public class AtenderPeticion extends Thread {
 
                     out.writeObject(1); // Enviamos el numJugador
                     out.writeObject(mesa); // Enviamos la mesa
-                    System.out.println("Se ha unido un jugador");
+
 
                 } else {
                     int i = 0;
                     int numJugador;
                     boolean aniadido = false;
-                    while (!aniadido) {
+                    while (i<mesasPublicas.size() && !aniadido) {
 
                         if (mesasPublicas.get(i).getNumPlayers() < 4) {
 
@@ -140,7 +139,7 @@ public class AtenderPeticion extends Thread {
 
                         out.writeObject(1); // Enviamos el numJugador
                         out.writeObject(mesa); // Enviamos la mesa
-                        System.out.println("Se ha unido un jugador");
+
 
                     }
                 }
@@ -159,27 +158,28 @@ public class AtenderPeticion extends Thread {
 
             } else if (accion.equals("SINGUP")) {
                 Jugador jugador = (Jugador) in.readObject();
-                out.writeObject(true);
+
                 if (exist(jugador.getName())) out.writeBoolean(false);
                 else out.writeBoolean(singUp(jugador));
 
             } else if (accion.equals("UPDATE")) {
                 Jugador jugador = (Jugador) in.readObject();
                 update(jugador);
-            } else if (accion.equals("BUY")) {
-                Jugador jugador = (Jugador) in.readObject();
+                //out.writeBoolean(true);
             }
             socket.close();
 
 
-        } catch (IOException | InterruptedException | ClassNotFoundException e) {
-            e.printStackTrace();
+        } catch (InterruptedException | ClassNotFoundException | IOException e) {
+            //e.printStackTrace();
+            System.err.println("Ha ocurrido un error");
         }
+
 
 
     }
 
-    public static void update(Jugador jugador) {
+    public static synchronized void update(Jugador jugador) {
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             DocumentBuilder db = dbf.newDocumentBuilder();
@@ -194,18 +194,21 @@ public class AtenderPeticion extends Thread {
             NodeList list = d.getElementsByTagName("jugador");
 
             for (int i = 0; i < list.getLength(); i++) {
+                if (list.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                    Element hijo = (Element) list.item(i);
+                    String nombre = hijo.getElementsByTagName("nombre").item(0).getTextContent();
 
-                Element hijo = (Element) list.item(i);
-                Element nombre = (Element) hijo.getElementsByTagName("nombre");
-                if (nombre.getTextContent().equals(jugador.getName())) {
-                    Element cartera = (Element) hijo.getElementsByTagName("cartera");
-                    cartera.setTextContent(String.valueOf(jugador.getCartera()));
+                    if (nombre.equals(jugador.getName())) {
+
+                        Element cartera = (Element) hijo.getElementsByTagName("cartera").item(0);
+                        cartera.setTextContent(String.valueOf(jugador.getCartera()));
+
+                    }
                 }
+
+
+
             }
-
-
-
-
 
             transformer.transform(source, result);
 
@@ -216,7 +219,7 @@ public class AtenderPeticion extends Thread {
     }
 
 
-    public static boolean singUp(Jugador jugador) {
+    public static synchronized boolean singUp(Jugador jugador) {
 
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -290,6 +293,7 @@ public class AtenderPeticion extends Thread {
             Document d = db.parse(new File("src//main//resources//Jugadores.xml"));
 
             NodeList list = d.getElementsByTagName("jugador");
+
 
             for (int i = 0; i < list.getLength(); i++) {
                 if (list.item(i).getNodeType() == Node.ELEMENT_NODE) {

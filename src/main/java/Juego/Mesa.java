@@ -18,6 +18,7 @@ public class Mesa implements Serializable {
     private int pasadas;
     private ArrayList<ArrayList<Carta>> manos;
     private boolean juego;
+    private boolean ordago;
 
 
     public Mesa(int codMesa) {
@@ -34,7 +35,7 @@ public class Mesa implements Serializable {
         }
         this.apuestas[2][1] = 0;
         this.apuestas[4][1] = 0;
-        this.apuestas[5][1] = 0;
+        this.apuestas[5][1] = -1;
         this.apuestas[3][1] = -1;
         this.apuestas[0][1] = -1;
         this.numRonda = 0;
@@ -43,6 +44,7 @@ public class Mesa implements Serializable {
         this.equipo[1] = 0;
         this.pasadas = 0;
         this.manos = new ArrayList<>(3);
+        this.ordago = false;
 
     }
 
@@ -144,7 +146,6 @@ public class Mesa implements Serializable {
 
         this.baraja = new Baraja();
         this.baraja.barajear();
-        this.codMesa = codMesa;
         this.numJugadorApuestaMasAlta = -1;
         this.apuestas = new int[6][2];
         this.mus = true;
@@ -154,14 +155,17 @@ public class Mesa implements Serializable {
         }
         this.apuestas[2][1] = 0;
         this.apuestas[4][1] = 0;
-        this.apuestas[5][1] = 0;
+        this.apuestas[5][1] = -1;
         this.apuestas[3][1] = -1;
         this.apuestas[0][1] = -1;
-        this.numRonda = 1;
+
+        this.numRonda = 0;
 
         this.pasadas = 0;
         this.manos = new ArrayList<>(3);
-        this.jugadorCortar = 0;
+        this.jugadorCortar = -1;
+        this.juego = false;
+
 
     }
 
@@ -195,4 +199,15 @@ public class Mesa implements Serializable {
         this.juego = b;
     }
 
+    public boolean isOrdago() {
+        return ordago;
+    }
+
+    public void setOrdago(boolean ordago) {
+        this.ordago = ordago;
+    }
+
+    public void setMus(boolean b) {
+        this.mus = b;
+    }
 }
