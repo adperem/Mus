@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
  * @author Adrián Pérez Moreno
  */
 
-public class Server implements Serializable {
+public class Server {
     /**
      * Lista de partidas publicas
      */
