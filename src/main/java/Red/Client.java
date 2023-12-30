@@ -13,6 +13,7 @@ import java.util.*;
 
 /**
  * Representa un Jugador que quiere jugar
+ *
  * @author Adrián Pérez Moreno
  */
 
@@ -24,6 +25,9 @@ public class Client {
     private Jugador jugador = null;
 
     public static void main(String[] args) {
+
+        //System.out.println("012345678".substring(3,4));
+
         Client client = new Client();
         client.jugar();
 
@@ -77,6 +81,7 @@ public class Client {
                 case 1:
 
                     //Solicitar mesa y siguiente jugador
+                    /*
                     Socket socket = new Socket("localhost", 3333);
 
 
@@ -87,11 +92,14 @@ public class Client {
                     int numJugador = (int) in.readObject();
 
                     play(in, numJugador);
+                    */
+                    play2("PLAY");
                     break;
 
 
                 case 2:
                     //crear una mesa
+                    /*
                     try {
                         socket = new Socket("localhost", 3333);
 
@@ -102,15 +110,17 @@ public class Client {
                         int codMesa = (int) in.readObject();
                         System.out.println("Codigo de la mesa " + codMesa);
                         numJugador = in.readInt();
-                        System.out.println("Has creado la mesa " + codMesa);
+
                         play(in, numJugador);
                     } catch (UnknownHostException e) {
                         e.printStackTrace();
-                    }
+                    }*/
+                    play2("NEW");
                     break;
 
                 case 3:
                     // Unirse a una mesa
+                    /*
                     try {
                         socket = new Socket("localhost", 3333);
 
@@ -134,25 +144,311 @@ public class Client {
 
                     } catch (UnknownHostException e) {
                         e.printStackTrace();
-                    }
+                    }*/
+                    play2("JOIN");
                     break;
 
             }
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
         }
     }
 
 
+    private void play2(String accion) {
+        // Vamos a crear 2 sockets uno para datos() y otro para control(6666).
+
+        try (Scanner sc = new Scanner(System.in)) {
+
+            Socket socket = new Socket("localhost", 3333);
+
+
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+
+            switch (accion) {
+                case "PLAY" -> {
+                    //no hace nada nuevo
+                    out.writeObject(accion);
+                }
+                case "NEW" -> {
+                    out.writeObject(accion);
+                    int codMesa = (int) in.readObject();
+                    System.out.println("Codigo de la mesa " + codMesa);
+                }
+                case "JOIN" -> {
+                    out.writeObject(accion);
+                    System.out.println("Inserte el codigo de la mesa");
+                    out.writeObject(Integer.parseInt(sc.nextLine()));
+
+
+                }
+            }
+            int numJugador = (int) in.readObject();
+            if (numJugador == 0 && accion.equals("JOIN")) System.out.println("Error al unirse a la mesa");
+
+            System.out.println("Esperando a que empiece la partida");
+            ArrayList<Carta> mano = new ArrayList<>(4);
+
+
+            Mesa mesa = null;
+            String contexto;
+            Socket sDatos, sControl = null;
+            ObjectOutputStream datosOut, controlOut = null;
+            ObjectInputStream datosIn, controlIn = null;
+
+            if (numJugador == 1) {
+                mesa = (Mesa) in.readObject();
+                mano.add(mesa.sacarCarta());
+
+                Thread.sleep(1000);
+
+                sDatos = new Socket(mesa.getIps().get(numJugador), 1234 + numJugador + 1);
+                sControl = new Socket(mesa.getIps().get(numJugador), 4321 + numJugador + 1);
+
+                datosOut = new ObjectOutputStream(sDatos.getOutputStream());
+                controlOut = new ObjectOutputStream(sControl.getOutputStream());
+
+                controlOut.writeObject("REPARTO,");
+                datosOut.writeObject(mesa);
+
+                ServerSocket ss = new ServerSocket(1234 + numJugador);
+                ServerSocket ss2 = new ServerSocket(4321 + numJugador);
+
+                Socket s1 = ss.accept();
+                datosIn = new ObjectInputStream(s1.getInputStream());
+
+                Socket s2 = ss2.accept();
+                controlIn = new ObjectInputStream(s2.getInputStream());
+
+            } else {
+                //el resto abre las conexiones
+
+
+                ServerSocket ss = new ServerSocket(1234 + numJugador);
+                ServerSocket ss2 = new ServerSocket(4321 + numJugador);
+
+                Socket s1 = ss.accept();
+                datosIn = new ObjectInputStream(s1.getInputStream());
+
+                Socket s2 = ss2.accept();
+                controlIn = new ObjectInputStream(s2.getInputStream());
+
+                contexto = (String) controlIn.readObject();
+                mesa = (Mesa) datosIn.readObject();
+
+                mano.add(mesa.sacarCarta());
+
+                if (numJugador == 4) {
+                    sDatos = new Socket(mesa.getIps().get(0), 1235);
+                    sControl = new Socket(mesa.getIps().get(0), 4321 + 1);
+                } else {
+                    sDatos = new Socket(mesa.getIps().get(numJugador), 1234 + numJugador + 1);
+                    sControl = new Socket(mesa.getIps().get(numJugador), 4321 + numJugador + 1);
+                }
+
+                datosOut = new ObjectOutputStream(sDatos.getOutputStream());
+                controlOut = new ObjectOutputStream(sControl.getOutputStream());
+
+                controlOut.writeObject("REPARTO,");
+                datosOut.writeObject(mesa);
+
+            }
+            socket.close();
+
+            // Damos por hecho q contexto == REPARTO
+
+            for (int i = 0; i < 3; i++) {
+                contexto = (String) controlIn.readObject();
+                mesa = (Mesa) datosIn.readObject();
+                mano.add(mesa.sacarCarta());
+                controlOut.writeObject("MUS,");
+                datosOut.writeObject(mesa);
+            }
+
+            mostrarCartas(mano);
+
+            contexto = (String) controlIn.readObject();
+            mesa = (Mesa) datosIn.readObject();
+            while (!contexto.equals("FIN")) {
+
+                switch (contexto.substring(0, contexto.indexOf(","))) {
+
+
+                    case "MUS" -> {
+                        System.out.println("\nSeleccione\n1 - Mus\n2 - Cortar");
+                        int seleccion = Integer.parseInt(sc.nextLine());
+                        while (seleccion != 1 && seleccion != 2) {
+                            System.out.println("\nSeleccione\n1 - Mus\n2 - Cortar");
+                            seleccion = Integer.parseInt(sc.nextLine());
+                        }
+
+                        if (seleccion == 1) {
+                            controlOut.writeObject("MUS,");
+                            datosOut.writeObject(mesa);
+
+                            contexto = (String) controlIn.readObject();
+                            mesa = (Mesa) datosIn.readObject();
+
+                            if (contexto.substring(0, contexto.indexOf(",")).equals("MUS")) {
+
+                                System.out.println("Mus aceptado");
+                                System.out.println("Indique separadas por comas las cartes que desea eliminar");
+                                String eliminar = sc.nextLine();
+                                String[] deleteCartas = eliminar.split(",");
+                                ArrayList<Carta> delete = new ArrayList<>();
+                                for (int i = 0; i < deleteCartas.length; i++)
+                                    delete.add(mano.get(Integer.parseInt(deleteCartas[i]) - 1));
+                                for (int i = 0; i < deleteCartas.length; i++) {
+                                    mano.remove(delete.get(i));
+                                }
+
+                                controlOut.writeObject("MUS,");
+                                datosOut.writeObject(mesa);
+
+                            } else {
+                                System.out.println("Se ha cortado");
+                            }
+
+
+                        } else {
+                            controlOut.writeObject("GRANDES," + numJugador);
+                            datosOut.writeObject(mesa);
+                        }
+
+                        contexto = (String) controlIn.readObject();
+                        mesa = (Mesa) datosIn.readObject();
+
+                    }
+
+                    case "GRANDES" -> {
+                        //Formato:  GRANDES,<numJugador q ha cortado / -1 >,<jugador apuesta mas alta, -1(default)>
+
+                        System.out.println("Entramos en Grandes");
+                        int cortado = Integer.parseInt(accion.substring(7), contexto.lastIndexOf(","));
+                        int alta = Integer.parseInt(accion.substring(accion.lastIndexOf(",")));
+
+                        if(alta != numJugador){
+                            if (cortado == -1) {
+                                // el jugador q ha cortado ya ha jugado
+
+                                switch (numJugador) {
+                                    case 1 -> {
+                                        if (alta != numJugador && alta != 3) {
+                                            mostrarCartas(mano);
+                                            int aux = realizarApuesta2(mesa, numJugador);
+
+                                            if (aux == -1) {
+                                                controlOut.writeObject("CHICAS,-1,-1");
+                                            } else if (aux == -2) {
+                                                controlOut.writeObject(contexto);
+                                            } else {
+                                                controlOut.writeObject("GRANDES,-1," + numJugador); //he realizado la apuesta mas alta
+                                            }
+
+
+                                        } else if (alta == 3) {
+                                            System.out.println("No puedes apostar a grandes, tu compañero ya ha apostado");
+                                        }
+                                    }
+                                    case 2 -> {
+                                        if (alta != numJugador && alta != 4) {
+                                            mostrarCartas(mano);
+                                            int aux = realizarApuesta2(mesa, numJugador);
+
+                                            if (aux == -1) {
+                                                controlOut.writeObject("CHICAS,-1,-1");
+                                            } else if (aux == -2) {
+                                                controlOut.writeObject(contexto);
+                                            } else {
+                                                controlOut.writeObject("GRANDES,-1," + numJugador); //he realizado la apuesta mas alta
+                                            }
+                                        } else if (alta == 4) {
+                                            System.out.println("No puedes apostar a grandes, tu compañero ya ha apostado");
+                                        }
+                                    }
+                                    case 3 -> {
+                                        if (alta != numJugador && alta != 1) {
+                                            mostrarCartas(mano);
+                                            int aux = realizarApuesta2(mesa, numJugador);
+
+                                            if (aux == -1) {
+                                                controlOut.writeObject("CHICAS,-1,-1");
+                                            } else if (aux == -2) {
+                                                controlOut.writeObject(contexto);
+                                            } else {
+                                                controlOut.writeObject("GRANDES,-1," + numJugador); //he realizado la apuesta mas alta
+                                            }
+                                        } else if (alta == 1) {
+                                            System.out.println("No puedes apostar a grandes, tu compañero ya ha apostado");
+                                        }
+                                    }
+                                    case 4 -> {
+                                        if (alta != numJugador && alta != 2) {
+                                            mostrarCartas(mano);
+                                            int aux = realizarApuesta2(mesa, numJugador);
+
+                                            if (aux == -1) {
+                                                controlOut.writeObject("CHICAS,-1,-1");
+                                            } else if (aux == -2) {
+                                                controlOut.writeObject(contexto);
+                                            } else {
+                                                controlOut.writeObject("GRANDES,-1," + numJugador); //he realizado la apuesta mas alta
+                                            }
+                                        } else if (alta == 2) {
+                                            System.out.println("No puedes apostar a grandes, tu compañero ya ha apostado");
+                                        }
+                                    }
+
+                                }
+
+
+                            } else {
+                                //El juegador q ha cortado todavia no ha jugado
+
+                                mostrarCartas(mano);
+                                int aux = realizarApuesta2(mesa, numJugador);
+
+                                if (aux == -2) {
+                                    controlOut.writeObject("GRANDES,-1,-1");
+                                }else {
+                                    controlOut.writeObject("GRANDES,-1,"+numJugador); //he realizado la apuesta mas alta
+                                }
+                            }
+                        }
+                        else {
+                            // LE toca al jugador que ha realizado la apuesta mas alta, es decir ha dado la vuelta
+                            controlOut.writeObject("CHICAS,-1,-1");
+                        }
+                    }
+
+                    case "CHICAS" -> {
+                        //Formato:  CHICAS,<-1 si el primer jugador no ha entrado todavia>,<jugador apuesta mas alta>
+                    }
+
+                }
+
+
+            }
+
+
+
+        } catch (IOException | ClassNotFoundException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+
+    }
+
     /**
      * Se conecta a una partida
-     * @param in {@code ObjectInputStream} por donde recibe la mesa
+     *
+     * @param in         {@code ObjectInputStream} por donde recibe la mesa
      * @param numJugador Número del jugador en la mesa
      */
-
     private void play(ObjectInputStream in, int numJugador) {
 
         try {
+
+
             System.out.println("Esperando a que empiece la partida");
             Scanner sc = new Scanner(System.in);
             int seleccion;
@@ -340,9 +636,10 @@ public class Client {
 
     /**
      * Se conecta con el servidor para crear un nuevo jugador
+     *
      * @param jugador Nuevo Jugador
      */
-    private static void newPlayer( Jugador jugador) {
+    private static void newPlayer(Jugador jugador) {
         //creamos el nuevo jugador
         Scanner sc = new Scanner(System.in);
         System.out.println("Introduce el nombre del jugador");
@@ -385,6 +682,7 @@ public class Client {
 
     /**
      * Inicia sesion con el servidor
+     *
      * @return El Jugador o {@code null} si ha ocurrido un problema
      */
     private static Jugador logIn() {
@@ -431,6 +729,7 @@ public class Client {
 
     /**
      * Actualiza la cartera del Jugador
+     *
      * @param jugador Jugador a actualizar
      */
     private static void update(Jugador jugador) {
@@ -449,6 +748,7 @@ public class Client {
 
     /**
      * Muestra por la salida estandar la mano del jugador
+     *
      * @param mano {@code ArrayList} que representa la mano del jugador
      */
     private static void mostrarCartas(ArrayList<Carta> mano) {
@@ -467,9 +767,10 @@ public class Client {
 
     /**
      * Simula la ronda de mus
-     * @param mano {@code ArrayList} representa la mano del jugador
-     * @param in {@code ObjectInputStream} por donde recibe la mesa del jugador anterior
-     * @param out {@code ObjectOutputStream} por donde envia la mesa al siguiente juegador
+     *
+     * @param mano       {@code ArrayList} representa la mano del jugador
+     * @param in         {@code ObjectInputStream} por donde recibe la mesa del jugador anterior
+     * @param out        {@code ObjectOutputStream} por donde envia la mesa al siguiente juegador
      * @param numJugador Numero del jugador
      */
     private static void mus(ArrayList<Carta> mano, ObjectInputStream in, ObjectOutputStream out, int numJugador) {
@@ -542,9 +843,10 @@ public class Client {
 
     /**
      * Simula la ronda de grandes
-     * @param mano {@code ArrayList} representa la mano del jugador
-     * @param in {@code ObjectInputStream} por donde recibe la mesa del jugador anterior
-     * @param out {@code ObjectOutputStream} por donde envia la mesa al siguiente juegador
+     *
+     * @param mano       {@code ArrayList} representa la mano del jugador
+     * @param in         {@code ObjectInputStream} por donde recibe la mesa del jugador anterior
+     * @param out        {@code ObjectOutputStream} por donde envia la mesa al siguiente juegador
      * @param numJugador Numero del jugador
      */
     private static void grandes(ArrayList<Carta> mano, ObjectInputStream in, ObjectOutputStream out, int numJugador) {
@@ -644,9 +946,10 @@ public class Client {
 
     /**
      * Simula la ronda de chicas
-     * @param mano {@code ArrayList} representa la mano del jugador
-     * @param in {@code ObjectInputStream} por donde recibe la mesa del jugador anterior
-     * @param out {@code ObjectOutputStream} por donde envia la mesa al siguiente juegador
+     *
+     * @param mano       {@code ArrayList} representa la mano del jugador
+     * @param in         {@code ObjectInputStream} por donde recibe la mesa del jugador anterior
+     * @param out        {@code ObjectOutputStream} por donde envia la mesa al siguiente juegador
      * @param numJugador Numero del jugador
      */
     private static void chicas(ArrayList<Carta> mano, ObjectInputStream in, ObjectOutputStream out, int numJugador) {
@@ -736,9 +1039,10 @@ public class Client {
 
     /**
      * Simula la ronda de pares
-     * @param mano {@code ArrayList} representa la mano del jugador
-     * @param in {@code ObjectInputStream} por donde recibe la mesa del jugador anterior
-     * @param out {@code ObjectOutputStream} por donde envia la mesa al siguiente juegador
+     *
+     * @param mano       {@code ArrayList} representa la mano del jugador
+     * @param in         {@code ObjectInputStream} por donde recibe la mesa del jugador anterior
+     * @param out        {@code ObjectOutputStream} por donde envia la mesa al siguiente juegador
      * @param numJugador Numero del jugador
      */
     private static void pares(ArrayList<Carta> mano, ObjectInputStream in, ObjectOutputStream out, int numJugador) {
@@ -834,9 +1138,10 @@ public class Client {
 
     /**
      * Simula la ronda de juego
-     * @param mano {@code ArrayList} representa la mano del jugador
-     * @param in {@code ObjectInputStream} por donde recibe la mesa del jugador anterior
-     * @param out {@code ObjectOutputStream} por donde envia la mesa al siguiente juegador
+     *
+     * @param mano       {@code ArrayList} representa la mano del jugador
+     * @param in         {@code ObjectInputStream} por donde recibe la mesa del jugador anterior
+     * @param out        {@code ObjectOutputStream} por donde envia la mesa al siguiente juegador
      * @param numJugador Numero del jugador
      */
     private static void juego(ArrayList<Carta> mano, ObjectInputStream in, ObjectOutputStream out, int numJugador) {
@@ -933,9 +1238,10 @@ public class Client {
 
     /**
      * Simula la ronda de puntos
-     * @param mano {@code ArrayList} representa la mano del jugador
-     * @param in {@code ObjectInputStream} por donde recibe la mesa del jugador anterior
-     * @param out {@code ObjectOutputStream} por donde envia la mesa al siguiente juegador
+     *
+     * @param mano       {@code ArrayList} representa la mano del jugador
+     * @param in         {@code ObjectInputStream} por donde recibe la mesa del jugador anterior
+     * @param out        {@code ObjectOutputStream} por donde envia la mesa al siguiente juegador
      * @param numJugador Numero del jugador
      */
     private static void puntos(ArrayList<Carta> mano, ObjectInputStream in, ObjectOutputStream out, int numJugador) {
@@ -1024,11 +1330,12 @@ public class Client {
 
     /**
      * Reparte los puntos apostados a los equipos
-     * @param mano {@code ArrayList} representa la mano del jugador
-     * @param in {@code ObjectInputStream} por donde recibe la mesa del jugador anterior
-     * @param out {@code ObjectOutputStream} por donde envia la mesa al siguiente juegador
+     *
+     * @param mano       {@code ArrayList} representa la mano del jugador
+     * @param in         {@code ObjectInputStream} por donde recibe la mesa del jugador anterior
+     * @param out        {@code ObjectOutputStream} por donde envia la mesa al siguiente juegador
      * @param numJugador Numero del jugador
-     * @param jugador Jugador que va a recibir los puntos
+     * @param jugador    Jugador que va a recibir los puntos
      */
     private static void asignarPuntos(ArrayList<Carta> mano, ObjectInputStream in, ObjectOutputStream out, int numJugador, Jugador jugador) {
 
@@ -1169,7 +1476,8 @@ public class Client {
 
     /**
      * Realiza una apuesta en la ronda acutal
-     * @param mesa Mesa en la que se esta jugando
+     *
+     * @param mesa       Mesa en la que se esta jugando
      * @param numJugador Número del jugador que esta apostando
      */
     private static void realizarApuesta(Mesa mesa, int numJugador) {
@@ -1215,7 +1523,64 @@ public class Client {
     }
 
     /**
+     * @param mesa
+     * @param numJugador
+     * @return numero del jugador q ha realizado la apuesta más alta
+     * en caso de igualar dev -1;
+     * en caso de pasar dev -2
+     */
+
+    private static int realizarApuesta2(Mesa mesa, int numJugador) {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("1 - Envidar\n2 - Pasar\n3 - Apostar\n4 - Igualar");
+        int seleccion = Integer.parseInt(sc.nextLine());
+        while (seleccion != 1 && seleccion != 2 && seleccion != 3 && seleccion != 4 && seleccion != 5) {
+            System.out.println("1 - Envidar\n2 - Pasar\n3 - Apostar\n4 - Igualar");
+            seleccion = Integer.parseInt(sc.nextLine());
+        }
+        switch (seleccion) {
+            case 1:
+                System.out.println("Envidamos");
+                if (!mesa.puedeApostar(2)) {
+                    System.out.println("La cantidad apostada debe ser superior a " + mesa.getApuestaMasAlta());
+                    realizarApuesta(mesa, numJugador);
+                } else mesa.setApuestaMasAlta(2, numJugador);
+                mesa.setPasadas(0);
+                return numJugador;
+
+            case 2:
+                System.out.println("Pasamos");
+                mesa.setPasadas(mesa.getPasadas() + 1);
+                if (mesa.getApuestaMasAlta() < 0) mesa.setApuestaMasAlta(0, mesa.getNumJugadorApuestaMasAlta());
+                return -1;
+
+            case 3:
+                System.out.println("Introduce la cantidad: ");
+                int cantidad = Integer.parseInt(sc.nextLine());
+                while (!mesa.puedeApostar(cantidad)) {
+                    System.out.println("La cantidad apostada debe ser superior a " + mesa.getApuestaMasAlta());
+                    System.out.println("1 - Envidar\n2 - Pasar\n3 - Apostar\n4 - Igualar");
+                    cantidad = Integer.parseInt(sc.nextLine());
+                }
+                mesa.setApuestaMasAlta(cantidad, numJugador);
+                mesa.setPasadas(0);
+                System.out.println("Apostamos");
+                return numJugador;
+
+            case 4:
+                //TODO: comprobar que la apuesta más alta !=0
+                System.out.println("Igualamos");
+                mesa.setApuestaMasAlta(-mesa.getApuestaMasAlta(), mesa.getNumJugadorApuestaMasAlta());
+                mesa.setPasadas(0);
+                return -1;
+
+        }
+        return 0; //nunca llega
+    }
+
+    /**
      * Comprueba si la mano tiene pares
+     *
      * @param mano Mano a comprobar
      * @return true si tiene pares, falso en caso contrario
      */
@@ -1232,6 +1597,7 @@ public class Client {
 
     /**
      * Comprueba si la mano tiene juego
+     *
      * @param mano Mano a comprobar
      * @return true si tiene juego, falso en caso contrario
      */
@@ -1246,6 +1612,7 @@ public class Client {
 
     /**
      * Devuleve el numero de putos que tiene la mano
+     *
      * @param mano Mano del jugador
      * @return Número de puntos
      */
@@ -1260,6 +1627,7 @@ public class Client {
 
     /**
      * Devuelve el número del jugador que gane la ronda de juego
+     *
      * @param mano1 Mano del jugador 1
      * @param mano2 Mano del jugador 2
      * @param mano3 Mano del jugador 3
@@ -1303,6 +1671,7 @@ public class Client {
 
     /**
      * Calcula la puntuación en pares
+     *
      * @param mano Mano del jugador
      * @return <li>1 si tienes pares</li><li>2 si tienes trio</li><li>3 si tienes duplex</li>
      */
@@ -1328,6 +1697,7 @@ public class Client {
 
     /**
      * Devuelve el número del jugador que gane la ronda de puntos
+     *
      * @param mano1 Mano del jugador 1
      * @param mano2 Mano del jugador 2
      * @param mano3 Mano del jugador 3
